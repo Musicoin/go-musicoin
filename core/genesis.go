@@ -220,7 +220,7 @@ func MusicoinGenesisBlock() string {
         "008d4c913ca41f1f8d73b43d8fa536da423f1fb4": {"balance": "10000000000000000000000000"},
         "575D25692f11dAAedfd4b1427C438Cc1687d54Cb": {"balance": "10000000000000000000000000"}
     }
-	}`, types.EncodeNonce(42), 1338, 4000000)
+	}`, types.EncodeNonce(42), 8000000, 4000000)
 }
 
 func OlympicGenesisBlock() string {
