@@ -168,7 +168,7 @@ func WriteGenesisBlockForTesting(db ethdb.Database, accounts ...GenesisAccount) 
 // WriteDefaultGenesisBlock assembles the official Ethereum genesis block and
 // writes it - along with all associated state - into a chain database.
 func WriteDefaultGenesisBlock(chainDb ethdb.Database) (*types.Block, error) {
-	return WriteGenesisBlock(chainDb, strings.NewReader(DefaultGenesisBlock()))
+	return WriteGenesisBlock(chainDb, strings.NewReader(MusicoinGenesisBlock()))
 }
 
 // WriteTestNetGenesisBlock assembles the Morden test network genesis block and
@@ -199,6 +199,30 @@ func DefaultGenesisBlock() string {
 
 // OlympicGenesisBlock assembles a JSON string representing the Olympic genesis
 // block.
+func MusicoinGenesisBlock() string {
+	return fmt.Sprintf(`{"coinbase"   : "0x0000000000000000000000000000000000000000",
+  	"extraData"  : "",
+		"nonce"      : "0x%x",
+		"gasLimit"   : "0x%x",
+    "difficulty" : "0x%x",
+		"mixhash"    : "0x0000000000000000000000000000000000000000000000000000000000000000",
+    "parentHash" : "0x0000000000000000000000000000000000000000000000000000000000000000",
+    "parentHash" : "0x0000000000000000000000000000000000000000000000000000000000000000",
+    "timestamp"  : "0x00",
+    "alloc": {
+        "0000000000000000000000000000000000000001": {"balance": "1"},
+        "0000000000000000000000000000000000000002": {"balance": "1"},
+        "0000000000000000000000000000000000000003": {"balance": "1"},
+        "0000000000000000000000000000000000000004": {"balance": "1"},
+        "00756cf8159095948496617f5fb17ed95059f536": {"balance": "10000000000000000000000000000"},
+        "d9b87b28449de9a45560fadace31300fcc50e68b": {"balance": "10000000000000000000000000"},
+        "380271fa3742446636ab20a42c5ad2708a7572df": {"balance": "10000000000000000000000000"},
+        "008d4c913ca41f1f8d73b43d8fa536da423f1fb4": {"balance": "10000000000000000000000000"},
+        "575D25692f11dAAedfd4b1427C438Cc1687d54Cb": {"balance": "10000000000000000000000000"}
+    }
+	}`, types.EncodeNonce(42), 1338, 4000000)
+}
+
 func OlympicGenesisBlock() string {
 	return fmt.Sprintf(`{
 		"nonce":"0x%x",
@@ -209,7 +233,7 @@ func OlympicGenesisBlock() string {
 			"0000000000000000000000000000000000000002": {"balance": "1"},
 			"0000000000000000000000000000000000000003": {"balance": "1"},
 			"0000000000000000000000000000000000000004": {"balance": "1"},
-			"dbdbdb2cbd23b783741e8d7fcf51e459b497e4a6": {"balance": "1606938044258990275541962092341162602522202993782792835301376"},
+			"00756cf8159095948496617f5fb17ed95059f536": {"balance": "10000000000000000000000000000"},
 			"e4157b34ea9615cfbde6b4fda419828124b70c78": {"balance": "1606938044258990275541962092341162602522202993782792835301376"},
 			"b9c015918bdaba24b4ff057a92a3873d6eb201be": {"balance": "1606938044258990275541962092341162602522202993782792835301376"},
 			"6c386a4b26f73c802f34673f7248bb118f97424a": {"balance": "1606938044258990275541962092341162602522202993782792835301376"},
