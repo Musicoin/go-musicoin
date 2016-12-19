@@ -20,4 +20,4 @@ import (
 	"math/big"
 )
 
-var BlockReward *big.Int = big.NewInt(5e+18)
+var BlockReward *big.Int = new(big.Int).Mul(big.NewInt(50), big.NewInt(1e+18))

@@ -168,7 +168,7 @@ func WriteGenesisBlockForTesting(db ethdb.Database, accounts ...GenesisAccount) 
 // WriteDefaultGenesisBlock assembles the official Ethereum genesis block and
 // writes it - along with all associated state - into a chain database.
 func WriteDefaultGenesisBlock(chainDb ethdb.Database) (*types.Block, error) {
-	return WriteGenesisBlock(chainDb, strings.NewReader(DefaultGenesisBlock()))
+	return WriteGenesisBlock(chainDb, strings.NewReader(MusicoinGenesisBlock()))
 }
 
 // WriteTestNetGenesisBlock assembles the Morden test network genesis block and
@@ -218,6 +218,27 @@ func OlympicGenesisBlock() string {
 			"1a26338f0d905e295fccb71fa9ea849ffa12aaf4": {"balance": "1606938044258990275541962092341162602522202993782792835301376"}
 		}
 	}`, types.EncodeNonce(42), params.GenesisGasLimit.Bytes(), params.GenesisDifficulty.Bytes())
+}
+
+// put Musicoin genesis here
+
+func MusicoinGenesisBlock() string {
+	return fmt.Sprintf(`{
+		"nonce": "0x%x",
+		"difficulty": "0x3d0900",
+		"mixhash": "0x00000000000000000000000000000000000000647572616c65787365646c6578",
+		"coinbase": "0x0000000000000000000000000000000000000000",
+		"timestamp": "0x00",
+		"parentHash": "0x0000000000000000000000000000000000000000000000000000000000000000",
+		"extraData": "0x",
+		"gasLimit": "0x7a1200",
+		"alloc": {
+			"0000000000000000000000000000000000000001": { "balance": "1" },
+			"0000000000000000000000000000000000000002": { "balance": "1" },
+			"0000000000000000000000000000000000000003": { "balance": "1" },
+			"0000000000000000000000000000000000000004": { "balance": "1" }
+		}
+	}`, types.EncodeNonce(0x000000000000002a))
 }
 
 // TestNetGenesisBlock assembles a JSON string representing the Morden test net
