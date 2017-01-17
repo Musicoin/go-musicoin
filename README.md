@@ -27,10 +27,9 @@ If you want to run with RPC, please add more flags accordingly:
 ## Can't find peers?
 Musicoin has set up some default nodes that you can try to connect default boostrap nodes:
 
-In geth console(either of the following 2 nodes): 
+In geth console(either of the following 2 nodes):
 > admin.addPeer("{enode info}")
 
-node 1:
-enode://d383ed7364a61b49c8532cd96ed95bfaee49388779f04dd5baaf63769817595c6c2c16324d11598b4e90c1069e467a7aaf44f10ea20ae85da31752de60e0fc47@104.197.75.174:30303
+"enode://ba2f6409f9894c12f5aad3471b9c4a2e7999b246af775c39f99d85b020cfc95d0b0dc6dd0985895bb2c4149cb45e4a3c17f7585be326cec293176bf81802a987@104.196.160.105:30303"
 
-nodoe 2: enode://b5cd2f4e925f5eaa026e3965a89888e156d9e190f7d16cd685687c3ff0abbafe0a29a45d1ea2a0096f9454a07bdabf38f2fce3df108a33ce5620055016d7abac@104.198.70.194:30303
+"enode://58703aae65e704576a95079b9814cf98f4e20294d9d21f444540c1b83d98353f1228caa7eec3fabfe52c094deffd0e33f0004e8631415a4f0d7c6fba6788bec0@104.197.56.66:30303"
