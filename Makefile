@@ -12,10 +12,10 @@
 GOBIN = build/bin
 GO ?= latest
 
-geth:
-	build/env.sh go run build/ci.go install ./cmd/geth
+gmc:
+	build/env.sh go run build/ci.go install ./cmd/gmc
 	@echo "Done building."
-	@echo "Run \"$(GOBIN)/geth\" to launch geth."
+	@echo "Run \"$(GOBIN)/gmc\" to launch geth."
 
 evm:
 	build/env.sh go run build/ci.go install ./cmd/evm

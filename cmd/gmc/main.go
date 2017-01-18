@@ -47,7 +47,7 @@ import (
 )
 
 const (
-	clientIdentifier = "Geth"   // Client identifier to advertise over the network
+	clientIdentifier = "GMC"   // Client identifier to advertise over the network
 	versionMajor     = 1        // Major version component of the current release
 	versionMinor     = 4        // Minor version component of the current release
 	versionPatch     = 18       // Patch version component of the current release
@@ -84,7 +84,7 @@ func init() {
 
 	// Initialize the CLI app and start Geth
 	app = utils.NewApp(verString, "the go-ethereum command line interface")
-	app.Action = geth
+	app.Action = gmc
 	app.HideVersion = true // we have a command to print the version
 	app.Commands = []cli.Command{
 		importCommand,
@@ -266,7 +266,7 @@ func makeDefaultExtra() []byte {
 // geth is the main entry point into the system if no special subcommand is ran.
 // It creates a default node based on the command line arguments and runs it in
 // blocking mode, waiting for it to be shut down.
-func geth(ctx *cli.Context) error {
+func gmc(ctx *cli.Context) error {
 	node := utils.MakeSystemNode(clientIdentifier, verString, relConfig, makeDefaultExtra(), ctx)
 	startNode(ctx, node)
 	node.Wait()
@@ -332,7 +332,7 @@ func startNode(ctx *cli.Context, stack *node.Node) {
 func makedag(ctx *cli.Context) error {
 	args := ctx.Args()
 	wrongArgs := func() {
-		utils.Fatalf(`Usage: geth makedag <block number> <outputdir>`)
+		utils.Fatalf(`Usage: gmc makedag <block number> <outputdir>`)
 	}
 	switch {
 	case len(args) == 2:
@@ -367,7 +367,7 @@ func gpuinfo(ctx *cli.Context) error {
 func gpubench(ctx *cli.Context) error {
 	args := ctx.Args()
 	wrongArgs := func() {
-		utils.Fatalf(`Usage: geth gpubench <gpu number>`)
+		utils.Fatalf(`Usage: gmc gpubench <gpu number>`)
 	}
 	switch {
 	case len(args) == 1:
