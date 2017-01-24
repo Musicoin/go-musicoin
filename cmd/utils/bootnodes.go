@@ -22,8 +22,8 @@ import "github.com/ethereum/go-ethereum/p2p/discover"
 // the Frontier network.
 var FrontierBootNodes = []*discover.Node{
 	// ETH/DEV Go Bootnodes
-	discover.MustParseNode("enode://f943403fae29cc82938b4d100ca3fb27f8b123a51d2c9f4dfbada6ae8dc536544552cb8d53e2f81c28951ec33c9f2bbb99be36fb0079cf242a7412cc9232e26e@104.196.233.5:30301"), // IE
-	discover.MustParseNode("enode://6ee641fc9f3c411fd7070f881f1c1dec1d7d2bf560a009b8e57cc220260d50e873d0573d77e9fa4eed42ce1ba9a8488dfd19a3570422e2e7e187a0287a2e2b20@104.196.227.38:30301"),  // BR
+	//discover.MustParseNode("enode://f943403fae29cc82938b4d100ca3fb27f8b123a51d2c9f4dfbada6ae8dc536544552cb8d53e2f81c28951ec33c9f2bbb99be36fb0079cf242a7412cc9232e26e@104.196.233.5:30301"), // IE
+	discover.MustParseNode("enode://c207f1c756d9a491b80c36468b6f7bd599673a732025d503baf9df7deb2d4b1a436ca2a2115e68ae6222648c7e6b635aa5b6fc545a477eb2eed4c8b62e6b6ae0@104.198.6.202:30301"),  // BR
 
 	// ETH/DEV Cpp Bootnodes
 	//discover.MustParseNode("enode://979b7fa28feeb35a4741660a16076f1943202cb72b6af70d327f053e248bab9ba81760f39d0701ef1d8f89cc1fbd2cacba0710a12cd5314d5e0c9021aa3637f9@5.1.83.226:30303"),
