@@ -15,7 +15,7 @@ GO ?= latest
 gmc:
 	build/env.sh go run build/ci.go install ./cmd/gmc
 	@echo "Done building."
-	@echo "Run \"$(GOBIN)/gmc\" to launch geth."
+	@echo "Run \"$(GOBIN)/gmc\" to launch musicoin."
 
 evm:
 	build/env.sh go run build/ci.go install ./cmd/evm
