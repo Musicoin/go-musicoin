@@ -432,7 +432,7 @@ func (self *worker) logLocalMinedBlocks(current, previous *Work) {
 		for checkBlockNum := previous.Block.NumberU64(); checkBlockNum < nextBlockNum; checkBlockNum++ {
 			inspectBlockNum := checkBlockNum - miningLogAtDepth
 			if self.isBlockLocallyMined(current, inspectBlockNum) {
-				glog.V(logger.Info).Infof("🔨 🔗  Mined %d blocks back: block #%v", miningLogAtDepth, inspectBlockNum)
+				glog.V(logger.Info).Infof("🔨 🔗  Mined %d blocks back: block #%v END-OF-LINE", miningLogAtDepth, inspectBlockNum)
 			}
 		}
 	}
