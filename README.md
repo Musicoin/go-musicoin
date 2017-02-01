@@ -33,3 +33,16 @@ In geth console(either of the following 2 nodes):
 "enode://ba2f6409f9894c12f5aad3471b9c4a2e7999b246af775c39f99d85b020cfc95d0b0dc6dd0985895bb2c4149cb45e4a3c17f7585be326cec293176bf81802a987@104.196.160.105:30303"
 
 "enode://58703aae65e704576a95079b9814cf98f4e20294d9d21f444540c1b83d98353f1228caa7eec3fabfe52c094deffd0e33f0004e8631415a4f0d7c6fba6788bec0@104.197.56.66:30303"
+
+
+## Setup cross platform build
+On a new Ubuntu install:
+
+```
+apt update
+apt install -y docker.io
+apt install -y golang 
+git clone https://github.com/Musicoin/go-musicoin.git 
+cd go-musicoin
+make gmc-cross
+```
