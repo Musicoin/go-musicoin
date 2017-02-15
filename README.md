@@ -22,8 +22,6 @@ Once the dependencies are installed, run:
 
 ## Run Musicoin client (GMC)
 
-As we havn't set default dir in code yet, you will still need to set &lt;datadir&gt; manually to prevent from fusing into your local Ethereum data. Please also remove your previous data if there's some generated from previous version of Musicoin client.
-
 `gmc console`
 
 If you want to run with RPC, please add more flags accordingly:
