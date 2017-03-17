@@ -51,30 +51,6 @@ gmc-linux-amd64:
 	@echo "Linux amd64 cross compilation done:"
 	@ls -ld $(GOBIN)/gmc-linux-* | grep amd64
 
-gmc-linux-arm: gmc-linux-arm-5 gmc-linux-arm-6 gmc-linux-arm-7 gmc-linux-arm64
-	@echo "Linux ARM cross compilation done:"
-	@ls -ld $(GOBIN)/gmc-linux-* | grep arm
-
-gmc-linux-arm-5:
-	build/env.sh go run build/ci.go xgo -- --go=$(GO) --dest=$(GOBIN) --targets=linux/arm-5 -v ./cmd/gmc
-	@echo "Linux ARMv5 cross compilation done:"
-	@ls -ld $(GOBIN)/gmc-linux-* | grep arm-5
-
-gmc-linux-arm-6:
-	build/env.sh go run build/ci.go xgo -- --go=$(GO) --dest=$(GOBIN) --targets=linux/arm-6 -v ./cmd/gmc
-	@echo "Linux ARMv6 cross compilation done:"
-	@ls -ld $(GOBIN)/gmc-linux-* | grep arm-6
-
-gmc-linux-arm-7:
-	build/env.sh go run build/ci.go xgo -- --go=$(GO) --dest=$(GOBIN) --targets=linux/arm-7 -v ./cmd/gmc
-	@echo "Linux ARMv7 cross compilation done:"
-	@ls -ld $(GOBIN)/gmc-linux-* | grep arm-7
-
-gmc-linux-arm64:
-	build/env.sh go run build/ci.go xgo -- --go=$(GO) --dest=$(GOBIN) --targets=linux/arm64 -v ./cmd/gmc
-	@echo "Linux ARM64 cross compilation done:"
-	@ls -ld $(GOBIN)/gmc-linux-* | grep arm64
-
 gmc-linux-mips64:
 	build/env.sh go run build/ci.go xgo -- --go=$(GO) --dest=$(GOBIN) --targets=linux/mips64 -v ./cmd/gmc
 	@echo "Linux MIPS64 cross compilation done:"
@@ -112,13 +88,3 @@ gmc-windows-amd64:
 	build/env.sh go run build/ci.go xgo -- --go=$(GO) --dest=$(GOBIN) --targets=windows/amd64 -v ./cmd/gmc
 	@echo "Windows amd64 cross compilation done:"
 	@ls -ld $(GOBIN)/gmc-windows-* | grep amd64
-
-gmc-android:
-	build/env.sh go run build/ci.go xgo -- --go=$(GO) --dest=$(GOBIN) --targets=android-21/aar -v ./cmd/gmc
-	@echo "Android cross compilation done:"
-	@ls -ld $(GOBIN)/gmc-android-*
-
-gmc-ios:
-	build/env.sh go run build/ci.go xgo -- --go=$(GO) --dest=$(GOBIN) --targets=ios-7.0/framework -v ./cmd/gmc
-	@echo "iOS framework cross compilation done:"
-	@ls -ld $(GOBIN)/gmc-ios-*
