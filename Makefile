@@ -33,11 +33,11 @@ clean:
 
 # Cross Compilation Targets (xgo)
 
-gmc-cross: gmc-linux gmc-darwin gmc-windows gmc-android gmc-ios
+gmc-cross: gmc-linux gmc-darwin gmc-windows
 	@echo "Full cross compilation done:"
 	@ls -ld $(GOBIN)/gmc-*
 
-gmc-linux: gmc-linux-386 gmc-linux-amd64 gmc-linux-arm gmc-linux-mips64 gmc-linux-mips64le
+gmc-linux: gmc-linux-386 gmc-linux-amd64 gmc-linux-mips64 gmc-linux-mips64le
 	@echo "Linux cross compilation done:"
 	@ls -ld $(GOBIN)/gmc-linux-*
 
