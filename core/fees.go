@@ -21,3 +21,6 @@ import (
 )
 
 var BlockReward *big.Int = new(big.Int).Mul(big.NewInt(314), big.NewInt(1e+18))
+var NewBlockReward *big.Int = new(big.Int).Mul(big.NewInt(280), big.NewInt(1e+18))
+var UBIReward *big.Int = new(big.Int).Mul(big.NewInt(30), big.NewInt(1e+18))
+var DevReward *big.Int = new(big.Int).Mul(big.NewInt(4), big.NewInt(1e+18))
