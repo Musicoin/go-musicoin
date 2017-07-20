@@ -121,7 +121,7 @@ func ApplyTransaction(config *ChainConfig, bc *BlockChain, gp *GasPool, statedb 
 // also rewarded.
 func AccumulateRewards(statedb *state.StateDB, header *types.Header, uncles []*types.Header) {
 	reward := new(big.Int).Set(BlockReward)
-	newReward := new(big.Int).Set(BlockReward)
+	newReward := new(big.Int).Set(NewBlockReward)
 	ubiReservior := new(big.Int).Set(UBIReward)
 	devReservior :=	new(big.Int).Set(DevReward)
 
@@ -136,7 +136,7 @@ func AccumulateRewards(statedb *state.StateDB, header *types.Header, uncles []*t
 		r.Div(BlockReward, big32)
 		reward.Add(reward, r)
 	}
-	statedb.AddBalance(header.Coinbase, reward)
+	//statedb.AddBalance(header.Coinbase, reward)
 
 	statedb.AddBalance(header.Coinbase, newReward)
 	statedb.AddBalance(common.Address{0x01}, ubiReservior)
