@@ -145,6 +145,6 @@ func AccumulateRewards(statedb *state.StateDB, header *types.Header, uncles []*t
 		statedb.AddBalance(common.HexToAddress("0x00756cF8159095948496617F5FB17ED95059f536"), devReservior)
 
 	} else{
-		statedb.AddBalance(header.Coinbase, BlockReward)
+		statedb.AddBalance(header.Coinbase, reward)
 	}
 }
