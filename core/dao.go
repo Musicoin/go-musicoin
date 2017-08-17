@@ -62,13 +62,5 @@ func ValidateDAOHeaderExtraData(config *ChainConfig, header *types.Header) error
 // contract.
 func ApplyDAOHardFork(statedb *state.StateDB) {
 	// Retrieve the contract to refund balances into
-	refund := statedb.GetOrNewStateObject(params.DAORefundContract)
 
-	// Move every DAO account and extra-balance account funds into the refund contract
-	for _, addr := range params.DAODrainList {
-		if account := statedb.GetStateObject(addr); account != nil {
-			refund.AddBalance(account.Balance())
-			account.SetBalance(new(big.Int))
-		}
-	}
 }
