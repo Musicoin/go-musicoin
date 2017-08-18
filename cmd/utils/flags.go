@@ -807,7 +807,7 @@ func MustMakeChainConfigFromDb(ctx *cli.Context, db ethdb.Database) *core.ChainC
 		} else {
 			config.DAOForkBlock = params.MainNetDAOForkBlock
 		}
-		config.DAOForkSupport = true
+		config.DAOForkSupport = false
 	}
 	if config.HomesteadGasRepriceBlock == nil {
 		if ctx.GlobalBool(TestNetFlag.Name) {
@@ -819,7 +819,7 @@ func MustMakeChainConfigFromDb(ctx *cli.Context, db ethdb.Database) *core.ChainC
 	// Force override any existing configs if explicitly requested
 	switch {
 	case ctx.GlobalBool(SupportDAOFork.Name):
-		config.DAOForkSupport = true
+		config.DAOForkSupport = false
 	case ctx.GlobalBool(OpposeDAOFork.Name):
 		config.DAOForkSupport = false
 	}
