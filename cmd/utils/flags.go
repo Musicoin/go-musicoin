@@ -823,7 +823,18 @@ func MustMakeChainConfigFromDb(ctx *cli.Context, db ethdb.Database) *core.ChainC
 	case ctx.GlobalBool(OpposeDAOFork.Name):
 		config.DAOForkSupport = false
 	}
-	
+	config.UBIForkBlock = params.UBIForkBlock
+
+	// Display UBI messages here
+	current := fmt.Sprintf("GMC is ready to config with UBI!")
+	howtosync := fmt.Sprintf("After the hard-fork block #%v passed, changing chains requires a resync from scratch!", config.UBIForkBlock)
+	separator := strings.Repeat("-", len(howtosync))
+
+	glog.V(logger.Warn).Info(separator)
+	glog.V(logger.Warn).Info(current)
+	glog.V(logger.Warn).Info(howtosync)
+	glog.V(logger.Warn).Info(separator)
+
 	return config
 }
 
