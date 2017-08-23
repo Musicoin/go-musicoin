@@ -1,4 +1,4 @@
-// Copyright 2014 The go-ethereum Authors
+// Copyright 2016 The go-ethereum Authors
 // This file is part of the go-ethereum library.
 //
 // The go-ethereum library is free software: you can redistribute it and/or modify
@@ -14,13 +14,14 @@
 // You should have received a copy of the GNU Lesser General Public License
 // along with the go-ethereum library. If not, see <http://www.gnu.org/licenses/>.
 
-package core
+package params
 
 import (
 	"math/big"
+
 )
 
-var BlockReward *big.Int = new(big.Int).Mul(big.NewInt(314), big.NewInt(1e+18))
-var NewBlockReward *big.Int = new(big.Int).Mul(big.NewInt(250), big.NewInt(1e+18))
-var UBIReward *big.Int = new(big.Int).Mul(big.NewInt(50), big.NewInt(1e+18))
-var DevReward *big.Int = new(big.Int).Mul(big.NewInt(14), big.NewInt(1e+18))
+// TestNetDAOForkBlock is the block number where the DAO hard-fork commences on
+// the Ethereum test network. It's enforced nil since it was decided not to do a
+// testnet transition.
+var UBIForkBlock = big.NewInt(1200000)

@@ -31,7 +31,7 @@ var TestNetDAOForkBlock *big.Int
 
 // MainNetDAOForkBlock is the block number where the DAO hard-fork commences on
 // the Ethereum main network.
-var MainNetDAOForkBlock = big.NewInt(1920000)
+var MainNetDAOForkBlock = big.NewInt(9999999999)
 
 // DAOForkBlockExtra is the block header extra-data field to set for the DAO fork
 // point and a number of consecutive blocks to allow fast/light syncers to correctly

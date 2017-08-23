@@ -36,6 +36,8 @@ type ChainConfig struct {
 	DAOForkBlock   *big.Int `json:"daoForkBlock"`   // TheDAO hard-fork switch block (nil = no fork)
 	DAOForkSupport bool     `json:"daoForkSupport"` // Whether the nodes supports or opposes the DAO hard-fork
 
+	UBIForkBlock	*big.Int  `json:"ubiForkBlock"`		// UBI hard-fork switch block, can't be nil
+
 	HomesteadGasRepriceBlock *big.Int `json:"homesteadGasRepriceBlock"` // Homestead gas reprice switch block (nil = no fork)
 
 	VmConfig vm.Config `json:"-"`
