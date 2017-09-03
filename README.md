@@ -10,6 +10,25 @@ Once the dependencies are installed, run:
 
 `make gmc`
 
+## Known issues with Go1.8+
+
+While compiling with Go1.8+, you will notice the following error:
+```
+build/env.sh go run build/ci.go install ./cmd/gmc
+unexpected directory layout:
+	import path:
+  /go-musicoin/build/_workspace/src/github.com/ethereum/go-ethereum/internal/build
+	root:
+  /go-musicoin/build/_workspace/src
+	dir:
+  /go-musicoin/build/_workspace/src/github.com/ethereum/go-ethereum/internal/build
+	expand root: /go-musicoin/build/_workspace/src
+	expand dir: /go-musicoin/internal/build
+	separator: /
+make: *** [gmc] Error 1
+```
+This is because of the unique directory structure that gmc follows which would not compile with the strict regulations imposed by Goo1.8 and above. In order to solve this, please re-compile using Go1.7 or lower. A successful build will create a `build/` subdirectory under which the `gmc` binary will be located.
+
 ## Setup cross platform build
 ```
     apt update
