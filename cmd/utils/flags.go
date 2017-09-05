@@ -826,7 +826,7 @@ func MustMakeChainConfigFromDb(ctx *cli.Context, db ethdb.Database) *core.ChainC
 	config.UBIForkBlock = params.UBIForkBlock
 
 	// Display UBI messages here
-	current := fmt.Sprintf("GMC is ready to config with UBI!")
+	current := fmt.Sprintf("GMC is now supporting UBI!")
 	howtosync := fmt.Sprintf("After the hard-fork block #%v passed, changing chains requires a resync from scratch!", config.UBIForkBlock)
 	separator := strings.Repeat("-", len(howtosync))
 
