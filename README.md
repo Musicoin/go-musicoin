@@ -1,4 +1,4 @@
-## Musicoin Blockcchain in Go
+## Musicoin Blockchain in Go
 
 Musicoin Go client(GMC) is a modified blockchain based on Ethereum protocol in Go language.
 
