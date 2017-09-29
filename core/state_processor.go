@@ -119,9 +119,10 @@ func ApplyTransaction(config *ChainConfig, bc *BlockChain, gp *GasPool, statedb 
 // also rewarded.
 func AccumulateRewards(statedb *state.StateDB, header *types.Header, uncles []*types.Header) {
 	reward := new(big.Int).Set(BlockReward)
-	newReward := new(big.Int).Set(NewBlockReward)
-	ubiReservior := new(big.Int).Set(UBIReward)
-	devReservior :=	new(big.Int).Set(DevReward)
+
+	if header.Number.Cmp(big.NewInt(1200000)) > 0 {
+		reward := new(big.Int).Set(NewBlockReward)
+	}
 
 	r := new(big.Int)
 	for _, uncle := range uncles {
@@ -134,17 +135,14 @@ func AccumulateRewards(statedb *state.StateDB, header *types.Header, uncles []*t
 		r.Div(BlockReward, big32)
 		reward.Add(reward, r)
 	}
-	//statedb.AddBalance(header.Coinbase, reward)
 
-	if header.Number.Cmp(big.NewInt(1200000))>0 {
+	statedb.AddBalance(header.Coinbase, reward)
 
-		//statedb.AddBalance(header.Coinbase, reward)
+	if header.Number.Cmp(big.NewInt(1200000)) > 0 {
+		ubiReservior := new(big.Int).Set(UBIReward)
+		devReservior := new(big.Int).Set(DevReward)
 
-		statedb.AddBalance(header.Coinbase, newReward)
 		statedb.AddBalance(common.HexToAddress("0x00eFdd5883eC628983E9063c7d969fE268BBf310"), ubiReservior)
 		statedb.AddBalance(common.HexToAddress("0x00756cF8159095948496617F5FB17ED95059f536"), devReservior)
-
-	} else{
-		statedb.AddBalance(header.Coinbase, reward)
 	}
 }
