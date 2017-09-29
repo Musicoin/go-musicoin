@@ -136,14 +136,13 @@ func AccumulateRewards(statedb *state.StateDB, header *types.Header, uncles []*t
 		reward.Add(reward, r)
 	}
 
+	statedb.AddBalance(header.Coinbase, reward)
+
 	if header.Number.Cmp(big.NewInt(1200000)) > 0 {
 		ubiReservior := new(big.Int).Set(UBIReward)
 		devReservior := new(big.Int).Set(DevReward)
-		statedb.AddBalance(header.Coinbase, newReward)
+
 		statedb.AddBalance(common.HexToAddress("0x00eFdd5883eC628983E9063c7d969fE268BBf310"), ubiReservior)
 		statedb.AddBalance(common.HexToAddress("0x00756cF8159095948496617F5FB17ED95059f536"), devReservior)
-
-	} else {
-		statedb.AddBalance(header.Coinbase, reward)
 	}
 }
