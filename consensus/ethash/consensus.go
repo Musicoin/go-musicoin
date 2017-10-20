@@ -550,10 +550,10 @@ func AccumulateRewards(config *params.ChainConfig, state *state.StateDB, header 
 		reward.Add(reward, r)
 	}
 
-	if header.Number.Cmp(big.NewInt(1200000)) > {
-		statedb.AddBalance(header.Coinbase, mcip3Reward)
-		statedb.AddBalance(common.HexToAddress("0x00eFdd5883eC628983E9063c7d969fE268BBf310"), ubiReservoir)
-		statedb.AddBalance(common.HexToAddress("0x00756cF8159095948496617F5FB17ED95059f536"), devReservoir)
+	if config.IsUBIFork(header.Number) {
+		state.AddBalance(header.Coinbase, mcip3Reward)
+		state.AddBalance(common.HexToAddress("0x00eFdd5883eC628983E9063c7d969fE268BBf310"), ubiReservoir)
+		state.AddBalance(common.HexToAddress("0x00756cF8159095948496617F5FB17ED95059f536"), devReservoir)
 	} else {
 		state.AddBalance(header.Coinbase, reward)
 	}

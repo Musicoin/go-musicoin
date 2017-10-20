@@ -33,6 +33,7 @@ var (
 	MainnetChainConfig = &ChainConfig{
 		ChainId:        big.NewInt(7762959),
 		HomesteadBlock: big.NewInt(1150000),
+		UBIForkBlock:   big.NewInt(1200001),
 		DAOForkBlock:   big.NewInt(36028797018963967),
 		DAOForkSupport: false,
 		EIP150Block:    big.NewInt(2463000),
@@ -48,6 +49,7 @@ var (
 	TestnetChainConfig = &ChainConfig{
 		ChainId:        big.NewInt(7762955),
 		HomesteadBlock: big.NewInt(0),
+		UBIForkBlock:   big.NewInt(0),
 		DAOForkBlock:   big.NewInt(36028797018963967),
 		DAOForkSupport: false,
 		EIP150Block:    big.NewInt(0),
@@ -63,6 +65,7 @@ var (
 	RinkebyChainConfig = &ChainConfig{
 		ChainId:        big.NewInt(4),
 		HomesteadBlock: big.NewInt(1),
+		UBIForkBlock:   big.NewInt(0),
 		DAOForkBlock:   nil,
 		DAOForkSupport: true,
 		EIP150Block:    big.NewInt(2),
@@ -85,8 +88,8 @@ var (
 	// means that all fields must be set at all times. This forces
 	// anyone adding flags to the config to also have to set these
 	// fields.
-	AllProtocolChanges = &ChainConfig{big.NewInt(1337), big.NewInt(0), nil, false, big.NewInt(0), common.Hash{}, big.NewInt(0), big.NewInt(0), big.NewInt(0), new(EthashConfig), nil}
-	TestChainConfig    = &ChainConfig{big.NewInt(1), big.NewInt(0), nil, false, big.NewInt(0), common.Hash{}, big.NewInt(0), big.NewInt(0), big.NewInt(0), new(EthashConfig), nil}
+	AllProtocolChanges = &ChainConfig{big.NewInt(1337), big.NewInt(1337), big.NewInt(0), nil, false, big.NewInt(0), common.Hash{}, big.NewInt(0), big.NewInt(0), big.NewInt(0), new(EthashConfig), nil}
+	TestChainConfig    = &ChainConfig{big.NewInt(1), big.NewInt(1), big.NewInt(0), nil, false, big.NewInt(0), common.Hash{}, big.NewInt(0), big.NewInt(0), big.NewInt(0), new(EthashConfig), nil}
 	TestRules          = TestChainConfig.Rules(new(big.Int))
 )
 
@@ -99,6 +102,7 @@ type ChainConfig struct {
 	ChainId *big.Int `json:"chainId"` // Chain id identifies the current chain and is used for replay protection
 
 	HomesteadBlock *big.Int `json:"homesteadBlock,omitempty"` // Homestead switch block (nil = no fork, 0 = already homestead)
+	UBIForkBlock	*big.Int  `json:"ubiForkBlock"`		// UBI hard-fork switch block, can't be nil
 
 	DAOForkBlock   *big.Int `json:"daoForkBlock,omitempty"`   // TheDAO hard-fork switch block (nil = no fork)
 	DAOForkSupport bool     `json:"daoForkSupport,omitempty"` // Whether the nodes supports or opposes the DAO hard-fork
@@ -147,9 +151,10 @@ func (c *ChainConfig) String() string {
 	default:
 		engine = "unknown"
 	}
-	return fmt.Sprintf("{ChainID: %v Homestead: %v DAO: %v DAOSupport: %v EIP150: %v EIP155: %v EIP158: %v Byzantium: %v Engine: %v}",
+	return fmt.Sprintf("{ChainID: %v Homestead: %v MCIP-3 UBI: %v DAO: %v DAOSupport: %v EIP150: %v EIP155: %v EIP158: %v Byzantium: %v Engine: %v}",
 		c.ChainId,
 		c.HomesteadBlock,
+		c.UBIForkBlock,
 		c.DAOForkBlock,
 		c.DAOForkSupport,
 		c.EIP150Block,
@@ -165,7 +170,12 @@ func (c *ChainConfig) IsHomestead(num *big.Int) bool {
 	return isForked(c.HomesteadBlock, num)
 }
 
-// IsDAO returns whether num is either equal to the DAO fork block or greater.
+// IsUBIFork returns whether num is either equal to the MCIP-3 block or greater.
+func (c *ChainConfig) IsUBIFork(num *big.Int) bool {
+	return isForked(c.UBIForkBlock, num)
+}
+
+// IsDAOFork returns whether num is either equal to the DAO fork block or greater.
 func (c *ChainConfig) IsDAOFork(num *big.Int) bool {
 	return isForked(c.DAOForkBlock, num)
 }
@@ -224,6 +234,9 @@ func (c *ChainConfig) CheckCompatible(newcfg *ChainConfig, height uint64) *Confi
 func (c *ChainConfig) checkCompatible(newcfg *ChainConfig, head *big.Int) *ConfigCompatError {
 	if isForkIncompatible(c.HomesteadBlock, newcfg.HomesteadBlock, head) {
 		return newCompatError("Homestead fork block", c.HomesteadBlock, newcfg.HomesteadBlock)
+	}
+	if isForkIncompatible(c.UBIForkBlock, newcfg.UBIForkBlock, head) {
+		return newCompatError("MCIP-3 UBI fork block", c.UBIForkBlock, newcfg.UBIForkBlock)
 	}
 	if isForkIncompatible(c.DAOForkBlock, newcfg.DAOForkBlock, head) {
 		return newCompatError("DAO fork block", c.DAOForkBlock, newcfg.DAOForkBlock)
