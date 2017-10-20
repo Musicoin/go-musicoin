@@ -8,7 +8,7 @@ https://camo.githubusercontent.com/915b7be44ada53c290eb157634330494ebe3e30a/6874
 [![Gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/Musicoin/go-musicoin?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
 
 Automated builds are available for stable releases and the unstable master branch.
-Binary archives are published at https://geth.ethereum.org/downloads/.
+Binary archives are published at https://github.com/Musicoin/go-musicoin/releases.
 
 ## Building the source
 
