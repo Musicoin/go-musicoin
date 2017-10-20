@@ -159,7 +159,7 @@ func SetupGenesisBlock(db ethdb.Database, genesis *Genesis) (*params.ChainConfig
 	if (stored == common.Hash{}) {
 		if genesis == nil {
 			log.Info("Writing default main-net genesis block")
-			genesis = DefaultGenesisBlock()
+			genesis = MusicoinGenesisBlock()
 		} else {
 			log.Info("Writing custom genesis block")
 		}
@@ -314,6 +314,18 @@ func DefaultGenesisBlock() *Genesis {
 		ExtraData:  hexutil.MustDecode("0x11bbe8db4e347b4e8c937c1c8370e4b5ed33adb3db69cbdb7a38e1e50b1b82fa"),
 		GasLimit:   5000,
 		Difficulty: big.NewInt(17179869184),
+		Alloc:      decodePrealloc(mainnetAllocData),
+	}
+}
+
+// MusicoinGenesisBlock returns the Ethereum main net genesis block.
+func MusicoinGenesisBlock() *Genesis {
+	return &Genesis{
+		Config:     params.MainnetChainConfig,
+		Nonce:      42,
+		ExtraData:  hexutil.MustDecode("0x"),
+		GasLimit:   8000000,
+		Difficulty: big.NewInt(4000000),
 		Alloc:      decodePrealloc(mainnetAllocData),
 	}
 }
