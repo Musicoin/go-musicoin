@@ -36,8 +36,10 @@ import (
 
 // Ethash proof-of-work protocol constants.
 var (
-	frontierBlockReward  *big.Int = big.NewInt(5e+18) // Block reward in wei for successfully mining a block
-	byzantiumBlockReward *big.Int = big.NewInt(3e+18) // Block reward in wei for successfully mining a block upward from Byzantium
+	musicBlockReward     *big.Int = new(big.Int).Mul(big.NewInt(314), big.NewInt(1e+18))
+	mcip3BlockReward     *big.Int = new(big.Int).Mul(big.NewInt(250), big.NewInt(1e+18))
+	ubiBlockReward       *big.Int = new(big.Int).Mul(big.NewInt(50), big.NewInt(1e+18))
+	devBlockReward       *big.Int = new(big.Int).Mul(big.NewInt(14), big.NewInt(1e+18))
 	maxUncles                     = 2                 // Maximum number of uncles allowed in a single block
 )
 
@@ -529,10 +531,11 @@ var (
 // TODO (karalabe): Move the chain maker into this package and make this private!
 func AccumulateRewards(config *params.ChainConfig, state *state.StateDB, header *types.Header, uncles []*types.Header) {
 	// Select the correct block reward based on chain progression
-	blockReward := frontierBlockReward
-	if config.IsByzantium(header.Number) {
-		blockReward = byzantiumBlockReward
-	}
+	blockReward := musicBlockReward
+	mcip3Reward := mcip3BlockReward
+	ubiReservoir := ubiBlockReward
+	devReservoir := devBlockReward
+
 	// Accumulate the rewards for the miner and any included uncles
 	reward := new(big.Int).Set(blockReward)
 	r := new(big.Int)
@@ -546,5 +549,12 @@ func AccumulateRewards(config *params.ChainConfig, state *state.StateDB, header 
 		r.Div(blockReward, big32)
 		reward.Add(reward, r)
 	}
-	state.AddBalance(header.Coinbase, reward)
+
+	if header.Number.Cmp(big.NewInt(1200000)) > {
+		statedb.AddBalance(header.Coinbase, mcip3Reward)
+		statedb.AddBalance(common.HexToAddress("0x00eFdd5883eC628983E9063c7d969fE268BBf310"), ubiReservoir)
+		statedb.AddBalance(common.HexToAddress("0x00756cF8159095948496617F5FB17ED95059f536"), devReservoir)
+	} else {
+		state.AddBalance(header.Coinbase, reward)
+	}
 }
