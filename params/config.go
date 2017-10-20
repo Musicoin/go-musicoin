@@ -36,11 +36,11 @@ var (
 		UBIForkBlock:   big.NewInt(1200001),
 		DAOForkBlock:   big.NewInt(36028797018963967),
 		DAOForkSupport: false,
-		EIP150Block:    big.NewInt(2463000),
-		EIP150Hash:     common.HexToHash("0x2086799aeebeae135c246c65021c82b4e15a2c451340993aacfd2751886514f0"),
-		EIP155Block:    big.NewInt(2675000),
-		EIP158Block:    big.NewInt(2675000),
-		ByzantiumBlock: big.NewInt(4370000),
+		EIP150Block:    big.NewInt(36028797018963967),
+		EIP150Hash:     common.HexToHash("0x"),
+		EIP155Block:    big.NewInt(36028797018963967),
+		EIP158Block:    big.NewInt(36028797018963967),
+		ByzantiumBlock: big.NewInt(36028797018963967),
 
 		Ethash: new(EthashConfig),
 	}

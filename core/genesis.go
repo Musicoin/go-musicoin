@@ -318,12 +318,14 @@ func DefaultGenesisBlock() *Genesis {
 	}
 }
 
-// MusicoinGenesisBlock returns the Ethereum main net genesis block.
+// MusicoinGenesisBlock returns the Musicoin main net genesis block.
 func MusicoinGenesisBlock() *Genesis {
 	return &Genesis{
 		Config:     params.MainnetChainConfig,
+		Timestamp:  0,
 		Nonce:      42,
-		ExtraData:  hexutil.MustDecode("0x"),
+		ExtraData:  nil,
+		Mixhash:    common.HexToHash("0x00000000000000000000000000000000000000647572616c65787365646c6578"),
 		GasLimit:   8000000,
 		Difficulty: big.NewInt(4000000),
 		Alloc:      decodePrealloc(mainnetAllocData),
