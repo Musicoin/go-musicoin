@@ -21,17 +21,16 @@ import (
 	"errors"
 	"fmt"
 	"io/ioutil"
-	"math/big"
 	"os"
 	"strings"
 	"testing"
 	"time"
 
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/core"
 	"github.com/ethereum/go-ethereum/eth"
 	"github.com/ethereum/go-ethereum/internal/jsre"
 	"github.com/ethereum/go-ethereum/node"
-	"github.com/ethereum/go-ethereum/params"
 )
 
 const (
@@ -78,8 +77,6 @@ type tester struct {
 	console   *Console
 	input     *hookedPrompter
 	output    *bytes.Buffer
-
-	lastConfirm string
 }
 
 // newTester creates a test environment based on which the console can operate.
@@ -92,14 +89,14 @@ func newTester(t *testing.T, confOverride func(*eth.Config)) *tester {
 	}
 
 	// Create a networkless protocol stack and start an Ethereum service within
-	stack, err := node.New(&node.Config{DataDir: workspace, UseLightweightKDF: true, Name: testInstance, NoDiscovery: true})
+	stack, err := node.New(&node.Config{DataDir: workspace, UseLightweightKDF: true, Name: testInstance})
 	if err != nil {
 		t.Fatalf("failed to create node: %v", err)
 	}
 	ethConf := &eth.Config{
-		ChainConfig: &params.ChainConfig{HomesteadBlock: new(big.Int), ChainId: new(big.Int)},
-		Etherbase:   common.HexToAddress(testAddress),
-		PowTest:     true,
+		Genesis:   core.DevGenesisBlock(),
+		Etherbase: common.HexToAddress(testAddress),
+		PowTest:   true,
 	}
 	if confOverride != nil {
 		confOverride(ethConf)

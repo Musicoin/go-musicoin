@@ -25,6 +25,7 @@ import (
 	"path/filepath"
 
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/contracts/ens"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/swarm/network"
 	"github.com/ethereum/go-ethereum/swarm/services/swap"
@@ -32,11 +33,8 @@ import (
 )
 
 const (
-	port = "8500"
-)
-
-var (
-	ensRootAddress = common.HexToAddress("0x112234455c3a32fd11230c42e7bccd4a84e02010")
+	DefaultHTTPListenAddr = "127.0.0.1"
+	DefaultHTTPPort       = "8500"
 )
 
 // separate bzz directories
@@ -48,12 +46,13 @@ type Config struct {
 	*network.HiveParams
 	Swap *swap.SwapParams
 	*network.SyncParams
-	Path      string
-	Port      string
-	PublicKey string
-	BzzKey    string
-	EnsRoot   common.Address
-	NetworkId uint64
+	Path       string
+	ListenAddr string
+	Port       string
+	PublicKey  string
+	BzzKey     string
+	EnsRoot    common.Address
+	NetworkId  uint64
 }
 
 // config is agnostic to where private key is coming from
@@ -76,19 +75,27 @@ func NewConfig(path string, contract common.Address, prvKey *ecdsa.PrivateKey, n
 		HiveParams:    network.NewHiveParams(dirpath),
 		ChunkerParams: storage.NewChunkerParams(),
 		StoreParams:   storage.NewStoreParams(dirpath),
-		Port:          port,
+		ListenAddr:    DefaultHTTPListenAddr,
+		Port:          DefaultHTTPPort,
 		Path:          dirpath,
 		Swap:          swap.DefaultSwapParams(contract, prvKey),
 		PublicKey:     pubkeyhex,
 		BzzKey:        keyhex,
-		EnsRoot:       ensRootAddress,
+		EnsRoot:       ens.TestNetAddress,
 		NetworkId:     networkId,
 	}
 	data, err = ioutil.ReadFile(confpath)
+
+	// if not set in function param, then set default for swarm network, will be overwritten by config file if present
+	if networkId == 0 {
+		self.NetworkId = network.NetworkId
+	}
+
 	if err != nil {
 		if !os.IsNotExist(err) {
 			return
 		}
+
 		// file does not exist
 		// write out config file
 		err = self.Save()
@@ -97,6 +104,7 @@ func NewConfig(path string, contract common.Address, prvKey *ecdsa.PrivateKey, n
 		}
 		return
 	}
+
 	// file exists, deserialise
 	err = json.Unmarshal(data, self)
 	if err != nil {
@@ -109,10 +117,16 @@ func NewConfig(path string, contract common.Address, prvKey *ecdsa.PrivateKey, n
 	if keyhex != self.BzzKey {
 		return nil, fmt.Errorf("bzz key does not match the one in the config file %v != %v", keyhex, self.BzzKey)
 	}
+
+	// if set in function param, replace id set from config file
+	if networkId != 0 {
+		self.NetworkId = networkId
+	}
+
 	self.Swap.SetKey(prvKey)
 
 	if (self.EnsRoot == common.Address{}) {
-		self.EnsRoot = ensRootAddress
+		self.EnsRoot = ens.TestNetAddress
 	}
 
 	return

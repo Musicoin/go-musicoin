@@ -30,9 +30,9 @@ import (
 	"github.com/ethereum/go-ethereum/ethdb"
 	"github.com/ethereum/go-ethereum/les/flowcontrol"
 	"github.com/ethereum/go-ethereum/light"
-	"github.com/ethereum/go-ethereum/logger"
-	"github.com/ethereum/go-ethereum/logger/glog"
+	"github.com/ethereum/go-ethereum/log"
 	"github.com/ethereum/go-ethereum/p2p"
+	"github.com/ethereum/go-ethereum/p2p/discv5"
 	"github.com/ethereum/go-ethereum/rlp"
 	"github.com/ethereum/go-ethereum/trie"
 )
@@ -42,19 +42,23 @@ type LesServer struct {
 	fcManager       *flowcontrol.ClientManager // nil if our node is client only
 	fcCostStats     *requestCostStats
 	defParams       *flowcontrol.ServerParams
-	srvr            *p2p.Server
-	synced, stopped bool
-	lock            sync.Mutex
+	lesTopic        discv5.Topic
+	quitSync        chan struct{}
 }
 
 func NewLesServer(eth *eth.Ethereum, config *eth.Config) (*LesServer, error) {
-	pm, err := NewProtocolManager(config.ChainConfig, false, config.NetworkId, eth.EventMux(), eth.Pow(), eth.BlockChain(), eth.TxPool(), eth.ChainDb(), nil, nil)
+	quitSync := make(chan struct{})
+	pm, err := NewProtocolManager(eth.BlockChain().Config(), false, config.NetworkId, eth.EventMux(), eth.Engine(), newPeerSet(), eth.BlockChain(), eth.TxPool(), eth.ChainDb(), nil, nil, quitSync, new(sync.WaitGroup))
 	if err != nil {
 		return nil, err
 	}
 	pm.blockLoop()
 
-	srv := &LesServer{protocolManager: pm}
+	srv := &LesServer{
+		protocolManager: pm,
+		quitSync:        quitSync,
+		lesTopic:        lesTopic(eth.BlockChain().Genesis().Hash()),
+	}
 	pm.server = srv
 
 	srv.defParams = &flowcontrol.ServerParams{
@@ -70,35 +74,20 @@ func (s *LesServer) Protocols() []p2p.Protocol {
 	return s.protocolManager.SubProtocols
 }
 
-// Start only starts the actual service if the ETH protocol has already been synced,
-// otherwise it will be started by Synced()
+// Start starts the LES server
 func (s *LesServer) Start(srvr *p2p.Server) {
-	s.lock.Lock()
-	defer s.lock.Unlock()
+	s.protocolManager.Start()
+	go func() {
+		logger := log.New("topic", s.lesTopic)
+		logger.Info("Starting topic registration")
+		defer logger.Info("Terminated topic registration")
 
-	s.srvr = srvr
-	if s.synced {
-		s.protocolManager.Start(s.srvr)
-	}
-}
-
-// Synced notifies the server that the ETH protocol has been synced and LES service can be started
-func (s *LesServer) Synced() {
-	s.lock.Lock()
-	defer s.lock.Unlock()
-
-	s.synced = true
-	if s.srvr != nil && !s.stopped {
-		s.protocolManager.Start(s.srvr)
-	}
+		srvr.DiscV5.RegisterTopic(s.lesTopic, s.quitSync)
+	}()
 }
 
 // Stop stops the LES service
 func (s *LesServer) Stop() {
-	s.lock.Lock()
-	defer s.lock.Unlock()
-
-	s.stopped = true
 	s.fcCostStats.store()
 	s.fcManager.Stop()
 	go func() {
@@ -126,16 +115,6 @@ func (list RequestCostList) decode() requestCostTable {
 		}
 	}
 	return table
-}
-
-func (table requestCostTable) encode() RequestCostList {
-	list := make(RequestCostList, len(table))
-	for idx, code := range reqList {
-		list[idx].MsgCode = code
-		list[idx].BaseCost = table[code].baseCost
-		list[idx].ReqCost = table[code].reqCost
-	}
-	return list
 }
 
 type linReg struct {
@@ -292,7 +271,8 @@ func (s *requestCostStats) update(msgCode, reqCnt, cost uint64) {
 
 func (pm *ProtocolManager) blockLoop() {
 	pm.wg.Add(1)
-	sub := pm.eventMux.Subscribe(core.ChainHeadEvent{})
+	headCh := make(chan core.ChainHeadEvent, 10)
+	headSub := pm.blockchain.SubscribeChainHeadEvent(headCh)
 	newCht := make(chan struct{}, 10)
 	newCht <- struct{}{}
 	go func() {
@@ -301,10 +281,10 @@ func (pm *ProtocolManager) blockLoop() {
 		lastBroadcastTd := common.Big0
 		for {
 			select {
-			case ev := <-sub.Chan():
+			case ev := <-headCh:
 				peers := pm.peers.AllPeers()
 				if len(peers) > 0 {
-					header := ev.Data.(core.ChainHeadEvent).Block.Header()
+					header := ev.Block.Header()
 					hash := header.Hash()
 					number := header.Number.Uint64()
 					td := core.GetTd(pm.chainDb, hash, number)
@@ -316,7 +296,7 @@ func (pm *ProtocolManager) blockLoop() {
 						lastHead = header
 						lastBroadcastTd = td
 
-						glog.V(logger.Debug).Infoln("===> ", number, hash, td, reorg)
+						log.Debug("Announcing block to peers", "number", number, "hash", hash, "td", td, "reorg", reorg)
 
 						announce := announceData{Hash: hash, Number: number, Td: td, ReorgDepth: reorg}
 						for _, p := range peers {
@@ -340,7 +320,7 @@ func (pm *ProtocolManager) blockLoop() {
 					}
 				}()
 			case <-pm.quitSync:
-				sub.Unsubscribe()
+				headSub.Unsubscribe()
 				pm.wg.Done()
 				return
 			}
@@ -420,7 +400,7 @@ func makeCht(db ethdb.Database) bool {
 	} else {
 		lastChtNum++
 
-		glog.V(logger.Detail).Infof("cht: %d %064x", lastChtNum, root)
+		log.Trace("Generated CHT", "number", lastChtNum, "root", root.Hex())
 
 		storeChtRoot(db, lastChtNum, root)
 		var data [8]byte
