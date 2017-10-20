@@ -83,7 +83,7 @@ var (
 	}
 	SwarmNetworkIdFlag = cli.IntFlag{
 		Name:  "bzznetworkid",
-		Usage: "Network identifier (integer, default 3=swarm testnet)",
+		Usage: "Network identifier (integer, default 7762955=swarm music testnet)",
 	}
 	SwarmConfigPathFlag = cli.StringFlag{
 		Name:  "bzzconfig",
