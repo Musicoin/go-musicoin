@@ -807,7 +807,7 @@ func MustMakeChainConfigFromDb(ctx *cli.Context, db ethdb.Database) *core.ChainC
 		} else {
 			config.DAOForkBlock = params.MainNetDAOForkBlock
 		}
-		config.DAOForkSupport = false
+		config.DAOForkSupport = true
 	}
 	if config.HomesteadGasRepriceBlock == nil {
 		if ctx.GlobalBool(TestNetFlag.Name) {
@@ -819,22 +819,27 @@ func MustMakeChainConfigFromDb(ctx *cli.Context, db ethdb.Database) *core.ChainC
 	// Force override any existing configs if explicitly requested
 	switch {
 	case ctx.GlobalBool(SupportDAOFork.Name):
-		config.DAOForkSupport = false
+		config.DAOForkSupport = true
 	case ctx.GlobalBool(OpposeDAOFork.Name):
 		config.DAOForkSupport = false
 	}
-	config.UBIForkBlock = params.UBIForkBlock
+	// Temporarilly display a proper message so the user knows which fork its on
+	if !ctx.GlobalBool(TestNetFlag.Name) && (genesis == nil || genesis.Hash() == common.HexToHash("0xd4e56740f876aef8c010b86a40d5f56745a118d0906a34e69aec8c0db1cb8fa3")) {
+		choice := "SUPPORT"
+		if !config.DAOForkSupport {
+			choice = "OPPOSE"
+		}
+		current := fmt.Sprintf("Geth is currently configured to %s the DAO hard-fork!", choice)
+		howtoswap := fmt.Sprintf("You can change your choice prior to block #%v with --support-dao-fork or --oppose-dao-fork.", config.DAOForkBlock)
+		howtosync := fmt.Sprintf("After the hard-fork block #%v passed, changing chains requires a resync from scratch!", config.DAOForkBlock)
+		separator := strings.Repeat("-", len(howtoswap))
 
-	// Display UBI messages here
-	current := fmt.Sprintf("GMC is now supporting UBI!")
-	howtosync := fmt.Sprintf("After the hard-fork block #%v passed, changing chains requires a resync from scratch!", config.UBIForkBlock)
-	separator := strings.Repeat("-", len(howtosync))
-
-	glog.V(logger.Warn).Info(separator)
-	glog.V(logger.Warn).Info(current)
-	glog.V(logger.Warn).Info(howtosync)
-	glog.V(logger.Warn).Info(separator)
-
+		glog.V(logger.Warn).Info(separator)
+		glog.V(logger.Warn).Info(current)
+		glog.V(logger.Warn).Info(howtoswap)
+		glog.V(logger.Warn).Info(howtosync)
+		glog.V(logger.Warn).Info(separator)
+	}
 	return config
 }
 

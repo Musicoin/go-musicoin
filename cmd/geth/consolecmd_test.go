@@ -78,7 +78,7 @@ func TestIPCAttachWelcome(t *testing.T) {
 	} else {
 		ws := tmpdir(t)
 		defer os.RemoveAll(ws)
-		ipc = filepath.Join(ws, "gmc.ipc")
+		ipc = filepath.Join(ws, "geth.ipc")
 	}
 	// Note: we need --shh because testAttachWelcome checks for default
 	// list of ipc modules and shh is included there.
