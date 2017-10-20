@@ -14,29 +14,113 @@
 // You should have received a copy of the GNU Lesser General Public License
 // along with the go-ethereum library. If not, see <http://www.gnu.org/licenses/>.
 
-// package web3ext contains geth specific web3.js extensions.
+// package web3ext contains gmc specific web3.js extensions.
 package web3ext
 
 var Modules = map[string]string{
-	"admin":    Admin_JS,
-	"debug":    Debug_JS,
-	"eth":      Eth_JS,
-	"miner":    Miner_JS,
-	"net":      Net_JS,
-	"personal": Personal_JS,
-	"rpc":      RPC_JS,
-	"shh":      Shh_JS,
-	"txpool":   TxPool_JS,
+	"admin":      Admin_JS,
+	"chequebook": Chequebook_JS,
+	"clique":     Clique_JS,
+	"debug":      Debug_JS,
+	"eth":        Eth_JS,
+	"miner":      Miner_JS,
+	"net":        Net_JS,
+	"personal":   Personal_JS,
+	"rpc":        RPC_JS,
+	"shh":        Shh_JS,
+	"swarmfs":    SWARMFS_JS,
+	"txpool":     TxPool_JS,
 }
+
+const Chequebook_JS = `
+web3._extend({
+	property: 'chequebook',
+	methods: [
+		new web3._extend.Method({
+			name: 'deposit',
+			call: 'chequebook_deposit',
+			params: 1,
+			inputFormatter: [null]
+		}),
+		new web3._extend.Property({
+			name: 'balance',
+			getter: 'chequebook_balance',
+			outputFormatter: web3._extend.utils.toDecimal
+		}),
+		new web3._extend.Method({
+			name: 'cash',
+			call: 'chequebook_cash',
+			params: 1,
+			inputFormatter: [null]
+		}),
+		new web3._extend.Method({
+			name: 'issue',
+			call: 'chequebook_issue',
+			params: 2,
+			inputFormatter: [null, null]
+		}),
+	]
+});
+`
+
+const Clique_JS = `
+web3._extend({
+	property: 'clique',
+	methods: [
+		new web3._extend.Method({
+			name: 'getSnapshot',
+			call: 'clique_getSnapshot',
+			params: 1,
+			inputFormatter: [null]
+		}),
+		new web3._extend.Method({
+			name: 'getSnapshotAtHash',
+			call: 'clique_getSnapshotAtHash',
+			params: 1
+		}),
+		new web3._extend.Method({
+			name: 'getSigners',
+			call: 'clique_getSigners',
+			params: 1,
+			inputFormatter: [null]
+		}),
+		new web3._extend.Method({
+			name: 'getSignersAtHash',
+			call: 'clique_getSignersAtHash',
+			params: 1
+		}),
+		new web3._extend.Method({
+			name: 'propose',
+			call: 'clique_propose',
+			params: 2
+		}),
+		new web3._extend.Method({
+			name: 'discard',
+			call: 'clique_discard',
+			params: 1
+		}),
+	],
+	properties: [
+		new web3._extend.Property({
+			name: 'proposals',
+			getter: 'clique_proposals'
+		}),
+	]
+});
+`
 
 const Admin_JS = `
 web3._extend({
 	property: 'admin',
-	methods:
-	[
+	methods: [
 		new web3._extend.Method({
 			name: 'addPeer',
 			call: 'admin_addPeer',
+			params: 1
+		}),
+		new web3._extend.Method({
+			name: 'removePeer',
+			call: 'admin_removePeer',
 			params: 1
 		}),
 		new web3._extend.Method({
@@ -54,11 +138,6 @@ web3._extend({
 			name: 'sleepBlocks',
 			call: 'admin_sleepBlocks',
 			params: 2
-		}),
-		new web3._extend.Method({
-			name: 'setSolc',
-			call: 'admin_setSolc',
-			params: 1
 		}),
 		new web3._extend.Method({
 			name: 'startRPC',
@@ -80,59 +159,8 @@ web3._extend({
 			name: 'stopWS',
 			call: 'admin_stopWS'
 		}),
-		new web3._extend.Method({
-			name: 'setGlobalRegistrar',
-			call: 'admin_setGlobalRegistrar',
-			params: 2
-		}),
-		new web3._extend.Method({
-			name: 'setHashReg',
-			call: 'admin_setHashReg',
-			params: 2
-		}),
-		new web3._extend.Method({
-			name: 'setUrlHint',
-			call: 'admin_setUrlHint',
-			params: 2
-		}),
-		new web3._extend.Method({
-			name: 'saveInfo',
-			call: 'admin_saveInfo',
-			params: 2
-		}),
-		new web3._extend.Method({
-			name: 'register',
-			call: 'admin_register',
-			params: 3
-		}),
-		new web3._extend.Method({
-			name: 'registerUrl',
-			call: 'admin_registerUrl',
-			params: 3
-		}),
-		new web3._extend.Method({
-			name: 'startNatSpec',
-			call: 'admin_startNatSpec',
-			params: 0
-		}),
-		new web3._extend.Method({
-			name: 'stopNatSpec',
-			call: 'admin_stopNatSpec',
-			params: 0
-		}),
-		new web3._extend.Method({
-			name: 'getContractInfo',
-			call: 'admin_getContractInfo',
-			params: 1
-		}),
-		new web3._extend.Method({
-			name: 'httpGet',
-			call: 'admin_httpGet',
-			params: 2
-		})
 	],
-	properties:
-	[
+	properties: [
 		new web3._extend.Property({
 			name: 'nodeInfo',
 			getter: 'admin_nodeInfo'
@@ -144,7 +172,7 @@ web3._extend({
 		new web3._extend.Property({
 			name: 'datadir',
 			getter: 'admin_datadir'
-		})
+		}),
 	]
 });
 `
@@ -152,8 +180,7 @@ web3._extend({
 const Debug_JS = `
 web3._extend({
 	property: 'debug',
-	methods:
-	[
+	methods: [
 		new web3._extend.Method({
 			name: 'printBlock',
 			call: 'debug_printBlock',
@@ -175,8 +202,8 @@ web3._extend({
 			params: 1
 		}),
 		new web3._extend.Method({
-			name: 'traceBlockByFile',
-			call: 'debug_traceBlockByFile',
+			name: 'traceBlockFromFile',
+			call: 'debug_traceBlockFromFile',
 			params: 1
 		}),
 		new web3._extend.Method({
@@ -206,6 +233,10 @@ web3._extend({
 			outputFormatter: console.log
 		}),
 		new web3._extend.Method({
+			name: 'chaindbCompact',
+			call: 'debug_chaindbCompact',
+		}),
+		new web3._extend.Method({
 			name: 'metrics',
 			call: 'debug_metrics',
 			params: 1
@@ -230,6 +261,16 @@ web3._extend({
 			call: 'debug_stacks',
 			params: 0,
 			outputFormatter: console.log
+		}),
+		new web3._extend.Method({
+			name: 'freeOSMemory',
+			call: 'debug_freeOSMemory',
+			params: 0,
+		}),
+		new web3._extend.Method({
+			name: 'setGCPercent',
+			call: 'debug_setGCPercent',
+			params: 1,
 		}),
 		new web3._extend.Method({
 			name: 'memStats',
@@ -294,8 +335,25 @@ web3._extend({
 		new web3._extend.Method({
 			name: 'traceTransaction',
 			call: 'debug_traceTransaction',
-			params: 1
-		})
+			params: 2,
+			inputFormatter: [null, null]
+		}),
+		new web3._extend.Method({
+			name: 'preimage',
+			call: 'debug_preimage',
+			params: 1,
+			inputFormatter: [null]
+		}),
+		new web3._extend.Method({
+			name: 'getBadBlocks',
+			call: 'debug_getBadBlocks',
+			params: 0,
+		}),
+		new web3._extend.Method({
+			name: 'storageRangeAt',
+			call: 'debug_storageRangeAt',
+			params: 5,
+		}),
 	],
 	properties: []
 });
@@ -304,8 +362,7 @@ web3._extend({
 const Eth_JS = `
 web3._extend({
 	property: 'eth',
-	methods:
-	[
+	methods: [
 		new web3._extend.Method({
 			name: 'sign',
 			call: 'eth_sign',
@@ -319,12 +376,6 @@ web3._extend({
 			inputFormatter: [web3._extend.formatters.inputTransactionFormatter, web3._extend.utils.fromDecimal, web3._extend.utils.fromDecimal]
 		}),
 		new web3._extend.Method({
-			name: 'getNatSpec',
-			call: 'eth_getNatSpec',
-			params: 1,
-			inputFormatter: [web3._extend.formatters.inputTransactionFormatter]
-		}),
-		new web3._extend.Method({
 			name: 'signTransaction',
 			call: 'eth_signTransaction',
 			params: 1,
@@ -335,10 +386,22 @@ web3._extend({
 			call: 'eth_submitTransaction',
 			params: 1,
 			inputFormatter: [web3._extend.formatters.inputTransactionFormatter]
-		})
+		}),
+		new web3._extend.Method({
+			name: 'getRawTransaction',
+			call: 'eth_getRawTransactionByHash',
+			params: 1
+		}),
+		new web3._extend.Method({
+			name: 'getRawTransactionFromBlock',
+			call: function(args) {
+				return (web3._extend.utils.isString(args[0]) && args[0].indexOf('0x') === 0) ? 'eth_getRawTransactionByBlockHashAndIndex' : 'eth_getRawTransactionByBlockNumberAndIndex';
+			},
+			params: 2,
+			inputFormatter: [web3._extend.formatters.inputBlockNumberFormatter, web3._extend.utils.toHex]
+		}),
 	],
-	properties:
-	[
+	properties: [
 		new web3._extend.Property({
 			name: 'pendingTransactions',
 			getter: 'eth_pendingTransactions',
@@ -350,7 +413,7 @@ web3._extend({
 				}
 				return formatted;
 			}
-		})
+		}),
 	]
 });
 `
@@ -358,8 +421,7 @@ web3._extend({
 const Miner_JS = `
 web3._extend({
 	property: 'miner',
-	methods:
-	[
+	methods: [
 		new web3._extend.Method({
 			name: 'start',
 			call: 'miner_start',
@@ -388,21 +450,9 @@ web3._extend({
 			inputFormatter: [web3._extend.utils.fromDecimal]
 		}),
 		new web3._extend.Method({
-			name: 'startAutoDAG',
-			call: 'miner_startAutoDAG',
-			params: 0
+			name: 'getHashrate',
+			call: 'miner_getHashrate'
 		}),
-		new web3._extend.Method({
-			name: 'stopAutoDAG',
-			call: 'miner_stopAutoDAG',
-			params: 0
-		}),
-		new web3._extend.Method({
-			name: 'makeDAG',
-			call: 'miner_makeDAG',
-			params: 1,
-			inputFormatter: [web3._extend.formatters.inputDefaultBlockNumberFormatter]
-		})
 	],
 	properties: []
 });
@@ -412,12 +462,11 @@ const Net_JS = `
 web3._extend({
 	property: 'net',
 	methods: [],
-	properties:
-	[
+	properties: [
 		new web3._extend.Property({
 			name: 'version',
 			getter: 'net_version'
-		})
+		}),
 	]
 });
 `
@@ -425,33 +474,52 @@ web3._extend({
 const Personal_JS = `
 web3._extend({
 	property: 'personal',
-	methods:
-	[
+	methods: [
 		new web3._extend.Method({
 			name: 'importRawKey',
 			call: 'personal_importRawKey',
 			params: 2
 		}),
 		new web3._extend.Method({
-			name: 'signAndSendTransaction',
-			call: 'personal_signAndSendTransaction',
-			params: 2,
-			inputFormatter: [web3._extend.formatters.inputTransactionFormatter, null]
-		})
+			name: 'sign',
+			call: 'personal_sign',
+			params: 3,
+			inputFormatter: [null, web3._extend.formatters.inputAddressFormatter, null]
+		}),
+		new web3._extend.Method({
+			name: 'ecRecover',
+			call: 'personal_ecRecover',
+			params: 2
+		}),
+		new web3._extend.Method({
+			name: 'openWallet',
+			call: 'personal_openWallet',
+			params: 2
+		}),
+		new web3._extend.Method({
+			name: 'deriveAccount',
+			call: 'personal_deriveAccount',
+			params: 3
+		}),
+	],
+	properties: [
+		new web3._extend.Property({
+			name: 'listWallets',
+			getter: 'personal_listWallets'
+		}),
 	]
-});
+})
 `
 
 const RPC_JS = `
 web3._extend({
 	property: 'rpc',
 	methods: [],
-	properties:
-	[
+	properties: [
 		new web3._extend.Property({
 			name: 'modules',
 			getter: 'rpc_modules'
-		})
+		}),
 	]
 });
 `
@@ -459,14 +527,43 @@ web3._extend({
 const Shh_JS = `
 web3._extend({
 	property: 'shh',
-	methods: [],
+	methods: [
+	],
 	properties:
 	[
 		new web3._extend.Property({
 			name: 'version',
 			getter: 'shh_version',
 			outputFormatter: web3._extend.utils.toDecimal
-		})
+		}),
+		new web3._extend.Property({
+			name: 'info',
+			getter: 'shh_info'
+		}),
+	]
+});
+`
+
+const SWARMFS_JS = `
+web3._extend({
+	property: 'swarmfs',
+	methods:
+	[
+		new web3._extend.Method({
+			name: 'mount',
+			call: 'swarmfs_mount',
+			params: 2
+		}),
+		new web3._extend.Method({
+			name: 'unmount',
+			call: 'swarmfs_unmount',
+			params: 1
+		}),
+		new web3._extend.Method({
+			name: 'listmounts',
+			call: 'swarmfs_listmounts',
+			params: 0
+		}),
 	]
 });
 `
@@ -493,7 +590,7 @@ web3._extend({
 				status.queued = web3._extend.utils.toDecimal(status.queued);
 				return status;
 			}
-		})
+		}),
 	]
 });
 `

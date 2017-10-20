@@ -14,7 +14,7 @@
 // You should have received a copy of the GNU Lesser General Public License
 // along with the go-ethereum library. If not, see <http://www.gnu.org/licenses/>.
 
-package filters_test
+package filters
 
 import (
 	"encoding/json"
@@ -22,7 +22,6 @@ import (
 	"testing"
 
 	"github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/eth/filters"
 	"github.com/ethereum/go-ethereum/rpc"
 )
 
@@ -35,19 +34,18 @@ func TestUnmarshalJSONNewFilterArgs(t *testing.T) {
 		topic0                    = common.HexToHash("3ac225168df54212a25c1c01fd35bebfea408fdac2e31ddd6f80a4bbf9a5f1ca")
 		topic1                    = common.HexToHash("9084a792d2f8b16a62b882fd56f7860c07bf5fa91dd8a2ae7e809e5180fef0b3")
 		topic2                    = common.HexToHash("6ccae1c4af4152f460ff510e573399795dfab5dcf1fa60d1f33ac8fdc1e480ce")
-		nullTopic                 = common.Hash{}
 	)
 
 	// default values
-	var test0 filters.NewFilterArgs
+	var test0 FilterCriteria
 	if err := json.Unmarshal([]byte("{}"), &test0); err != nil {
 		t.Fatal(err)
 	}
-	if test0.FromBlock != rpc.LatestBlockNumber {
-		t.Fatalf("expected %d, got %d", rpc.LatestBlockNumber, test0.FromBlock)
+	if test0.FromBlock != nil {
+		t.Fatalf("expected nil, got %d", test0.FromBlock)
 	}
-	if test0.ToBlock != rpc.LatestBlockNumber {
-		t.Fatalf("expected %d, got %d", rpc.LatestBlockNumber, test0.ToBlock)
+	if test0.ToBlock != nil {
+		t.Fatalf("expected nil, got %d", test0.ToBlock)
 	}
 	if len(test0.Addresses) != 0 {
 		t.Fatalf("expected 0 addresses, got %d", len(test0.Addresses))
@@ -57,20 +55,20 @@ func TestUnmarshalJSONNewFilterArgs(t *testing.T) {
 	}
 
 	// from, to block number
-	var test1 filters.NewFilterArgs
+	var test1 FilterCriteria
 	vector := fmt.Sprintf(`{"fromBlock":"0x%x","toBlock":"0x%x"}`, fromBlock, toBlock)
 	if err := json.Unmarshal([]byte(vector), &test1); err != nil {
 		t.Fatal(err)
 	}
-	if test1.FromBlock != fromBlock {
+	if test1.FromBlock.Int64() != fromBlock.Int64() {
 		t.Fatalf("expected FromBlock %d, got %d", fromBlock, test1.FromBlock)
 	}
-	if test1.ToBlock != toBlock {
+	if test1.ToBlock.Int64() != toBlock.Int64() {
 		t.Fatalf("expected ToBlock %d, got %d", toBlock, test1.ToBlock)
 	}
 
 	// single address
-	var test2 filters.NewFilterArgs
+	var test2 FilterCriteria
 	vector = fmt.Sprintf(`{"address": "%s"}`, address0.Hex())
 	if err := json.Unmarshal([]byte(vector), &test2); err != nil {
 		t.Fatal(err)
@@ -83,7 +81,7 @@ func TestUnmarshalJSONNewFilterArgs(t *testing.T) {
 	}
 
 	// multiple address
-	var test3 filters.NewFilterArgs
+	var test3 FilterCriteria
 	vector = fmt.Sprintf(`{"address": ["%s", "%s"]}`, address0.Hex(), address1.Hex())
 	if err := json.Unmarshal([]byte(vector), &test3); err != nil {
 		t.Fatal(err)
@@ -99,7 +97,7 @@ func TestUnmarshalJSONNewFilterArgs(t *testing.T) {
 	}
 
 	// single topic
-	var test4 filters.NewFilterArgs
+	var test4 FilterCriteria
 	vector = fmt.Sprintf(`{"topics": ["%s"]}`, topic0.Hex())
 	if err := json.Unmarshal([]byte(vector), &test4); err != nil {
 		t.Fatal(err)
@@ -115,7 +113,7 @@ func TestUnmarshalJSONNewFilterArgs(t *testing.T) {
 	}
 
 	// test multiple "AND" topics
-	var test5 filters.NewFilterArgs
+	var test5 FilterCriteria
 	vector = fmt.Sprintf(`{"topics": ["%s", "%s"]}`, topic0.Hex(), topic1.Hex())
 	if err := json.Unmarshal([]byte(vector), &test5); err != nil {
 		t.Fatal(err)
@@ -137,7 +135,7 @@ func TestUnmarshalJSONNewFilterArgs(t *testing.T) {
 	}
 
 	// test optional topic
-	var test6 filters.NewFilterArgs
+	var test6 FilterCriteria
 	vector = fmt.Sprintf(`{"topics": ["%s", null, "%s"]}`, topic0.Hex(), topic2.Hex())
 	if err := json.Unmarshal([]byte(vector), &test6); err != nil {
 		t.Fatal(err)
@@ -151,11 +149,8 @@ func TestUnmarshalJSONNewFilterArgs(t *testing.T) {
 	if test6.Topics[0][0] != topic0 {
 		t.Fatalf("got %x, expected %x", test6.Topics[0][0], topic0)
 	}
-	if len(test6.Topics[1]) != 1 {
-		t.Fatalf("expected 1 topic, got %d", len(test6.Topics[1]))
-	}
-	if test6.Topics[1][0] != nullTopic {
-		t.Fatalf("got %x, expected empty hash", test6.Topics[1][0])
+	if len(test6.Topics[1]) != 0 {
+		t.Fatalf("expected 0 topic, got %d", len(test6.Topics[1]))
 	}
 	if len(test6.Topics[2]) != 1 {
 		t.Fatalf("expected 1 topic, got %d", len(test6.Topics[2]))
@@ -165,7 +160,7 @@ func TestUnmarshalJSONNewFilterArgs(t *testing.T) {
 	}
 
 	// test OR topics
-	var test7 filters.NewFilterArgs
+	var test7 FilterCriteria
 	vector = fmt.Sprintf(`{"topics": [["%s", "%s"], null, ["%s", null]]}`, topic0.Hex(), topic1.Hex(), topic2.Hex())
 	if err := json.Unmarshal([]byte(vector), &test7); err != nil {
 		t.Fatal(err)
@@ -181,18 +176,10 @@ func TestUnmarshalJSONNewFilterArgs(t *testing.T) {
 			topic0, topic1, test7.Topics[0][0], test7.Topics[0][1],
 		)
 	}
-	if len(test7.Topics[1]) != 1 {
-		t.Fatalf("expected 1 topic, got %d topics", len(test7.Topics[1]))
+	if len(test7.Topics[1]) != 0 {
+		t.Fatalf("expected 0 topic, got %d topics", len(test7.Topics[1]))
 	}
-	if test7.Topics[1][0] != nullTopic {
-		t.Fatalf("expected empty hash, got %x", test7.Topics[1][0])
-	}
-	if len(test7.Topics[2]) != 2 {
-		t.Fatalf("expected 2 topics, got %d topics", len(test7.Topics[2]))
-	}
-	if test7.Topics[2][0] != topic2 || test7.Topics[2][1] != nullTopic {
-		t.Fatalf("invalid topics expected [%x,%x], got [%x,%x]",
-			topic2, nullTopic, test7.Topics[2][0], test7.Topics[2][1],
-		)
+	if len(test7.Topics[2]) != 0 {
+		t.Fatalf("expected 0 topics, got %d topics", len(test7.Topics[2]))
 	}
 }

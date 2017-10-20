@@ -1,6 +1,6 @@
 #### System information
 
-Geth version: `geth version`
+GMC version: `gmc version`
 OS & Version: Windows/Linux/OSX
 Commit hash : (if `develop`)
 
