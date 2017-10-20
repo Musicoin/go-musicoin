@@ -3,7 +3,7 @@
 # A script to boot a dev swarm cluster on a Linux host (typically in a Docker
 # container started with swarm/dev/run.sh).
 #
-# The cluster contains a bootnode, a geth node and multiple swarm nodes, with
+# The cluster contains a bootnode, a gmc node and multiple swarm nodes, with
 # each node having its own data directory in a base directory passed with the
 # --dir flag (default is swarm/dev/cluster).
 #
@@ -12,7 +12,7 @@
 # the 192.168.33.0/24 subnet:
 #
 # bootnode: 192.168.33.2
-# geth:     192.168.33.3
+# gmc:     192.168.33.3
 # swarm:    192.168.33.10{1,2,...,n}
 
 set -e
@@ -37,10 +37,10 @@ BOOTNODE_KEY="32078f313bea771848db70745225c52c00981589ad6b5b49163f0f5ee852617d"
 BOOTNODE_PUBKEY="760c4460e5336ac9bbd87952a3c7ec4363fc0a97bd31c86430806e287b437fd1b01abc6e1db640cf3106b520344af1d58b00b57823db3e1407cbc433e1b6d04d"
 BOOTNODE_URL="enode://${BOOTNODE_PUBKEY}@${BOOTNODE_IP}:${BOOTNODE_PORT}"
 
-# static geth configuration
-GETH_IP="192.168.33.3"
-GETH_RPC_PORT="8545"
-GETH_RPC_URL="http://${GETH_IP}:${GETH_RPC_PORT}"
+# static gmc configuration
+GMC_IP="192.168.33.3"
+GMC_RPC_PORT="8545"
+GMC_RPC_URL="http://${GMC_IP}:${GMC_RPC_PORT}"
 
 usage() {
   cat >&2 <<USAGE
@@ -68,7 +68,7 @@ main() {
   stop_cluster
   create_network
   start_bootnode
-  start_geth_node
+  start_gmc_node
   start_swarm_nodes
 }
 
@@ -121,7 +121,7 @@ create_network() {
   ip address add "${subnet}" dev "${BRIDGE_NAME}"
 }
 
-# start_bootnode starts a bootnode which is used to bootstrap the geth and
+# start_bootnode starts a bootnode which is used to bootstrap the gmc and
 # swarm nodes
 start_bootnode() {
   local key_file="${base_dir}/bootnode.key"
@@ -136,25 +136,25 @@ start_bootnode() {
   start_node "bootnode" "${BOOTNODE_IP}" "$(which bootnode)" ${args[@]}
 }
 
-# start_geth_node starts a geth node with --datadir pointing at <base-dir>/geth
-# and a single, unlocked account with password "geth"
-start_geth_node() {
-  local dir="${base_dir}/geth"
+# start_gmc_node starts a gcm node with --datadir pointing at <base-dir>/gmc
+# and a single, unlocked account with password "gmc"
+start_gmc_node() {
+  local dir="${base_dir}/gmc"
   mkdir -p "${dir}"
 
-  local password="geth"
+  local password="gmc"
   echo "${password}" > "${dir}/password"
 
   # create an account if necessary
   if [[ ! -e "${dir}/keystore" ]]; then
-    info "creating geth account"
+    info "creating gmc account"
     create_account "${dir}" "${password}"
   fi
 
   # get the account address
   local address="$(jq --raw-output '.address' ${dir}/keystore/*)"
   if [[ -z "${address}" ]]; then
-    fail "failed to get geth account address"
+    fail "failed to get gmc account address"
   fi
 
   local args=(
@@ -164,12 +164,12 @@ start_geth_node() {
     --unlock    "${address}"
     --password  "${dir}/password"
     --rpc
-    --rpcaddr   "${GETH_IP}"
-    --rpcport   "${GETH_RPC_PORT}"
+    --rpcaddr   "${GMC_IP}"
+    --rpcport   "${GMC_RPC_PORT}"
     --verbosity "6"
   )
 
-  start_node "geth" "${GETH_IP}" "$(which geth)" ${args[@]}
+  start_node "gmc" "${GMC_IP}" "$(which gmc)" ${args[@]}
 }
 
 start_swarm_nodes() {
@@ -208,7 +208,7 @@ start_swarm_node() {
     --bootnodes    "${BOOTNODE_URL}"
     --datadir      "${dir}"
     --identity     "${name}"
-    --ens-api      "${GETH_RPC_URL}"
+    --ens-api      "${GMC_RPC_URL}"
     --bzznetworkid "321"
     --bzzaccount   "${address}"
     --password     "${dir}/password"
@@ -282,7 +282,7 @@ create_account() {
   local dir=$1
   local password=$2
 
-  geth --datadir "${dir}" --password /dev/stdin account new <<< "${password}"
+  gmc --datadir "${dir}" --password /dev/stdin account new <<< "${password}"
 }
 
 main "$@"

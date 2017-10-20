@@ -356,7 +356,7 @@ func DefaultRinkebyGenesisBlock() *Genesis {
 	}
 }
 
-// DevGenesisBlock returns the 'geth --dev' genesis block.
+// DevGenesisBlock returns the 'gmc --dev' genesis block.
 func DevGenesisBlock() *Genesis {
 	return &Genesis{
 		Config:     params.AllProtocolChanges,

@@ -26,6 +26,7 @@ build/_vendor/pkg
 /build/_workspace/
 /build/bin/
 /geth*.zip
+/gmc*.zip
 
 # travis
 profile.tmp

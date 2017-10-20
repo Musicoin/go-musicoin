@@ -168,8 +168,8 @@ func (p *protips) print(network string) {
 	// If a known genesis block is available, display it and prepend an init command
 	fullinit, lightinit := "", ""
 	if p.genesis != "" {
-		fullinit = fmt.Sprintf("geth --datadir=$HOME/.%s init %s.json && ", network, network)
-		lightinit = fmt.Sprintf("geth --datadir=$HOME/.%s --light init %s.json && ", network, network)
+		fullinit = fmt.Sprintf("gmc --datadir=$HOME/.%s init %s.json && ", network, network)
+		lightinit = fmt.Sprintf("gmc --datadir=$HOME/.%s --light init %s.json && ", network, network)
 	}
 	// If an ethstats server is available, add the ethstats flag
 	statsflag := ""
@@ -193,16 +193,16 @@ func (p *protips) print(network string) {
 	var tasks, tips []string
 
 	tasks = append(tasks, "Run an archive node with historical data")
-	tips = append(tips, fmt.Sprintf("%sgeth --networkid=%d --datadir=$HOME/.%s --cache=1024%s%s", fullinit, p.network, network, statsflag, bootflagFull))
+	tips = append(tips, fmt.Sprintf("%sgmc --networkid=%d --datadir=$HOME/.%s --cache=1024%s%s", fullinit, p.network, network, statsflag, bootflagFull))
 
 	tasks = append(tasks, "Run a full node with recent data only")
-	tips = append(tips, fmt.Sprintf("%sgeth --networkid=%d --datadir=$HOME/.%s --cache=512 --fast%s%s", fullinit, p.network, network, statsflag, bootflagFull))
+	tips = append(tips, fmt.Sprintf("%sgmc --networkid=%d --datadir=$HOME/.%s --cache=512 --fast%s%s", fullinit, p.network, network, statsflag, bootflagFull))
 
 	tasks = append(tasks, "Run a light node with on demand retrievals")
-	tips = append(tips, fmt.Sprintf("%sgeth --networkid=%d --datadir=$HOME/.%s --light%s%s", lightinit, p.network, network, statsflag, bootflagLight))
+	tips = append(tips, fmt.Sprintf("%sgmc --networkid=%d --datadir=$HOME/.%s --light%s%s", lightinit, p.network, network, statsflag, bootflagLight))
 
 	tasks = append(tasks, "Run an embedded node with constrained memory")
-	tips = append(tips, fmt.Sprintf("%sgeth --networkid=%d --datadir=$HOME/.%s --cache=32 --light%s%s", lightinit, p.network, network, statsflag, bootflagLight))
+	tips = append(tips, fmt.Sprintf("%sgmc --networkid=%d --datadir=$HOME/.%s --cache=32 --light%s%s", lightinit, p.network, network, statsflag, bootflagLight))
 
 	// If the tips are short, display in a table
 	short := true

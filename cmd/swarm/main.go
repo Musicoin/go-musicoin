@@ -104,7 +104,7 @@ var (
 	EnsAPIFlag = cli.StringFlag{
 		Name:  "ens-api",
 		Usage: "URL of the Ethereum API provider to use for ENS record lookups",
-		Value: node.DefaultIPCEndpoint("geth"),
+		Value: node.DefaultIPCEndpoint("gmc"),
 	}
 	EnsAddrFlag = cli.StringFlag{
 		Name:  "ens-addr",
@@ -149,7 +149,7 @@ var (
 
 var defaultNodeConfig = node.DefaultConfig
 
-// This init function sets defaults so cmd/swarm can run alongside geth.
+// This init function sets defaults so cmd/swarm can run alongside gmc.
 func init() {
 	defaultNodeConfig.Name = clientIdentifier
 	defaultNodeConfig.Version = params.VersionWithCommit(gitCommit)
