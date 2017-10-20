@@ -274,8 +274,8 @@ const tmplSourceJava = `
 
 package {{.Package}};
 
-import org.ethereum.gmc.*;
-import org.ethereum.gmc.internal.*;
+import org.musicoin.gmc.*;
+import org.musicoin.gmc.internal.*;
 
 {{range $contract := .Contracts}}
 	public class {{.Type}} {
@@ -303,10 +303,10 @@ import org.ethereum.gmc.internal.*;
 			}
 		{{end}}
 
-		// Ethereum address where this contract is located at.
+		// Musicoin address where this contract is located at.
 		public final Address Address;
 
-		// Ethereum transaction in which this contract was deployed (if known!).
+		// Musicoin transaction in which this contract was deployed (if known!).
 		public final Transaction Deployer;
 
 		// Contract instance bound to a blockchain address.
