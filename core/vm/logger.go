@@ -17,12 +17,16 @@
 package vm
 
 import (
+	"encoding/hex"
 	"fmt"
+	"io"
 	"math/big"
-	"os"
-	"unicode"
+	"time"
 
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/common/hexutil"
+	"github.com/ethereum/go-ethereum/common/math"
+	"github.com/ethereum/go-ethereum/core/types"
 )
 
 type Storage map[common.Hash]common.Hash
@@ -36,63 +40,85 @@ func (self Storage) Copy() Storage {
 	return cpy
 }
 
-// StructLogCollector is the basic interface to capture emited logs by the EVM logger.
-type StructLogCollector interface {
-	// Adds the structured log to the collector.
-	AddStructLog(StructLog)
-}
-
 // LogConfig are the configuration options for structured logger the EVM
 type LogConfig struct {
-	DisableMemory  bool               // disable memory capture
-	DisableStack   bool               // disable stack capture
-	DisableStorage bool               // disable storage capture
-	FullStorage    bool               // show full storage (slow)
-	Collector      StructLogCollector // the log collector
+	DisableMemory  bool // disable memory capture
+	DisableStack   bool // disable stack capture
+	DisableStorage bool // disable storage capture
+	FullStorage    bool // show full storage (slow)
+	Limit          int  // maximum length of output, but zero means unlimited
 }
 
-// StructLog is emitted to the Environment each cycle and lists information about the current internal state
+//go:generate gencodec -type StructLog -field-override structLogMarshaling -out gen_structlog.go
+
+// StructLog is emitted to the EVM each cycle and lists information about the current internal state
 // prior to the execution of the statement.
 type StructLog struct {
-	Pc      uint64
-	Op      OpCode
-	Gas     *big.Int
-	GasCost *big.Int
-	Memory  []byte
-	Stack   []*big.Int
-	Storage map[common.Hash]common.Hash
-	Depth   int
-	Err     error
+	Pc         uint64                      `json:"pc"`
+	Op         OpCode                      `json:"op"`
+	Gas        uint64                      `json:"gas"`
+	GasCost    uint64                      `json:"gasCost"`
+	Memory     []byte                      `json:"memory"`
+	MemorySize int                         `json:"memSize"`
+	Stack      []*big.Int                  `json:"stack"`
+	Storage    map[common.Hash]common.Hash `json:"-"`
+	Depth      int                         `json:"depth"`
+	Err        error                       `json:"error"`
 }
 
-// Logger is an EVM state logger and implements VmLogger.
+// overrides for gencodec
+type structLogMarshaling struct {
+	Stack   []*math.HexOrDecimal256
+	Gas     math.HexOrDecimal64
+	GasCost math.HexOrDecimal64
+	Memory  hexutil.Bytes
+	OpName  string `json:"opName"`
+}
+
+func (s *StructLog) OpName() string {
+	return s.Op.String()
+}
+
+// Tracer is used to collect execution traces from an EVM transaction
+// execution. CaptureState is called for each step of the VM with the
+// current VM state.
+// Note that reference types are actual VM data structures; make copies
+// if you need to retain them beyond the current call.
+type Tracer interface {
+	CaptureState(env *EVM, pc uint64, op OpCode, gas, cost uint64, memory *Memory, stack *Stack, contract *Contract, depth int, err error) error
+	CaptureEnd(output []byte, gasUsed uint64, t time.Duration, err error) error
+}
+
+// StructLogger is an EVM state logger and implements Tracer.
 //
-// Logger can capture state based on the given Log configuration and also keeps
+// StructLogger can capture state based on the given Log configuration and also keeps
 // a track record of modified storage which is used in reporting snapshots of the
 // contract their storage.
-type Logger struct {
+type StructLogger struct {
 	cfg LogConfig
 
-	env           Environment
+	logs          []StructLog
 	changedValues map[common.Address]Storage
 }
 
-// newLogger returns a new logger
-func newLogger(cfg LogConfig, env Environment) *Logger {
-	return &Logger{
-		cfg:           cfg,
-		env:           env,
+// NewStructLogger returns a new logger
+func NewStructLogger(cfg *LogConfig) *StructLogger {
+	logger := &StructLogger{
 		changedValues: make(map[common.Address]Storage),
 	}
+	if cfg != nil {
+		logger.cfg = *cfg
+	}
+	return logger
 }
 
-// captureState logs a new structured log message and pushes it out to the environment
+// CaptureState logs a new structured log message and pushes it out to the environment
 //
-// captureState also tracks SSTORE ops to track dirty values.
-func (l *Logger) captureState(pc uint64, op OpCode, gas, cost *big.Int, memory *Memory, stack *stack, contract *Contract, depth int, err error) {
-	// short circuit if no log collector is present
-	if l.cfg.Collector == nil {
-		return
+// CaptureState also tracks SSTORE ops to track dirty values.
+func (l *StructLogger) CaptureState(env *EVM, pc uint64, op OpCode, gas, cost uint64, memory *Memory, stack *Stack, contract *Contract, depth int, err error) error {
+	// check if already accumulated the specified number of logs
+	if l.cfg.Limit != 0 && l.cfg.Limit <= len(l.logs) {
+		return ErrTraceLimitReached
 	}
 
 	// initialise new changed values storage container for this contract
@@ -102,18 +128,14 @@ func (l *Logger) captureState(pc uint64, op OpCode, gas, cost *big.Int, memory *
 	}
 
 	// capture SSTORE opcodes and determine the changed value and store
-	// it in the local storage container. NOTE: we do not need to do any
-	// range checks here because that's already handler prior to calling
-	// this function.
-	switch op {
-	case SSTORE:
+	// it in the local storage container.
+	if op == SSTORE && stack.len() >= 2 {
 		var (
 			value   = common.BigToHash(stack.data[stack.len()-2])
 			address = common.BigToHash(stack.data[stack.len()-1])
 		)
 		l.changedValues[contract.Address()][address] = value
 	}
-
 	// copy a snapstot of the current memory state to a new buffer
 	var mem []byte
 	if !l.cfg.DisableMemory {
@@ -139,7 +161,8 @@ func (l *Logger) captureState(pc uint64, op OpCode, gas, cost *big.Int, memory *
 			storage = make(Storage)
 			// Get the contract account and loop over each storage entry. This may involve looping over
 			// the trie and is a very expensive process.
-			l.env.Db().GetAccount(contract.Address()).ForEachStorage(func(key, value common.Hash) bool {
+
+			env.StateDB.ForEachStorage(contract.Address(), func(key, value common.Hash) bool {
 				storage[key] = value
 				// Return true, indicating we'd like to continue.
 				return true
@@ -150,50 +173,64 @@ func (l *Logger) captureState(pc uint64, op OpCode, gas, cost *big.Int, memory *
 		}
 	}
 	// create a new snaptshot of the EVM.
-	log := StructLog{pc, op, new(big.Int).Set(gas), cost, mem, stck, storage, l.env.Depth(), err}
-	// Add the log to the collector
-	l.cfg.Collector.AddStructLog(log)
+	log := StructLog{pc, op, gas, cost, mem, memory.Len(), stck, storage, depth, err}
+
+	l.logs = append(l.logs, log)
+	return nil
 }
 
-// StdErrFormat formats a slice of StructLogs to human readable format
-func StdErrFormat(logs []StructLog) {
-	fmt.Fprintf(os.Stderr, "VM STAT %d OPs\n", len(logs))
+func (l *StructLogger) CaptureEnd(output []byte, gasUsed uint64, t time.Duration, err error) error {
+	fmt.Printf("0x%x", output)
+	if err != nil {
+		fmt.Printf(" error: %v\n", err)
+	}
+	return nil
+}
+
+// StructLogs returns a list of captured log entries
+func (l *StructLogger) StructLogs() []StructLog {
+	return l.logs
+}
+
+// WriteTrace writes a formatted trace to the given writer
+func WriteTrace(writer io.Writer, logs []StructLog) {
 	for _, log := range logs {
-		fmt.Fprintf(os.Stderr, "PC %08d: %s GAS: %v COST: %v", log.Pc, log.Op, log.Gas, log.GasCost)
+		fmt.Fprintf(writer, "%-16spc=%08d gas=%v cost=%v", log.Op, log.Pc, log.Gas, log.GasCost)
 		if log.Err != nil {
-			fmt.Fprintf(os.Stderr, " ERROR: %v", log.Err)
+			fmt.Fprintf(writer, " ERROR: %v", log.Err)
 		}
-		fmt.Fprintf(os.Stderr, "\n")
+		fmt.Fprintln(writer)
 
-		fmt.Fprintln(os.Stderr, "STACK =", len(log.Stack))
-
-		for i := len(log.Stack) - 1; i >= 0; i-- {
-			fmt.Fprintf(os.Stderr, "%04d: %x\n", len(log.Stack)-i-1, common.LeftPadBytes(log.Stack[i].Bytes(), 32))
-		}
-
-		const maxMem = 10
-		addr := 0
-		fmt.Fprintln(os.Stderr, "MEM =", len(log.Memory))
-		for i := 0; i+16 <= len(log.Memory) && addr < maxMem; i += 16 {
-			data := log.Memory[i : i+16]
-			str := fmt.Sprintf("%04d: % x  ", addr*16, data)
-			for _, r := range data {
-				if r == 0 {
-					str += "."
-				} else if unicode.IsPrint(rune(r)) {
-					str += fmt.Sprintf("%s", string(r))
-				} else {
-					str += "?"
-				}
+		if len(log.Stack) > 0 {
+			fmt.Fprintln(writer, "Stack:")
+			for i := len(log.Stack) - 1; i >= 0; i-- {
+				fmt.Fprintf(writer, "%08d  %x\n", len(log.Stack)-i-1, math.PaddedBigBytes(log.Stack[i], 32))
 			}
-			addr++
-			fmt.Fprintln(os.Stderr, str)
+		}
+		if len(log.Memory) > 0 {
+			fmt.Fprintln(writer, "Memory:")
+			fmt.Fprint(writer, hex.Dump(log.Memory))
+		}
+		if len(log.Storage) > 0 {
+			fmt.Fprintln(writer, "Storage:")
+			for h, item := range log.Storage {
+				fmt.Fprintf(writer, "%x: %x\n", h, item)
+			}
+		}
+		fmt.Fprintln(writer)
+	}
+}
+
+// WriteLogs writes vm logs in a readable format to the given writer
+func WriteLogs(writer io.Writer, logs []*types.Log) {
+	for _, log := range logs {
+		fmt.Fprintf(writer, "LOG%d: %x bn=%d txi=%x\n", len(log.Topics), log.Address, log.BlockNumber, log.TxIndex)
+
+		for i, topic := range log.Topics {
+			fmt.Fprintf(writer, "%08d  %x\n", i, topic)
 		}
 
-		fmt.Fprintln(os.Stderr, "STORAGE =", len(log.Storage))
-		for h, item := range log.Storage {
-			fmt.Fprintf(os.Stderr, "%x: %x\n", h, item)
-		}
-		fmt.Fprintln(os.Stderr)
+		fmt.Fprint(writer, hex.Dump(log.Data))
+		fmt.Fprintln(writer)
 	}
 }

@@ -22,13 +22,17 @@ import (
 	"os"
 	"path/filepath"
 	"runtime"
-	"sort"
 	"strconv"
 	"strings"
 	"testing"
 	"time"
 
-	"github.com/ethereum/go-ethereum/rpc"
+	"github.com/ethereum/go-ethereum/params"
+)
+
+const (
+	ipcAPIs  = "admin:1.0 debug:1.0 eth:1.0 miner:1.0 net:1.0 personal:1.0 rpc:1.0 shh:1.0 txpool:1.0 web3:1.0"
+	httpAPIs = "eth:1.0 net:1.0 rpc:1.0 web3:1.0"
 )
 
 // Tests that a node embedded within a console can be started up properly and
@@ -36,36 +40,33 @@ import (
 func TestConsoleWelcome(t *testing.T) {
 	coinbase := "0x8605cdbbdb6d264aa742e77020dcbc58fcdce182"
 
-	// Start a geth console, make sure it's cleaned up and terminate the console
-	geth := runGeth(t,
+	// Start a gmc console, make sure it's cleaned up and terminate the console
+	gmc := runGMC(t,
 		"--port", "0", "--maxpeers", "0", "--nodiscover", "--nat", "none",
 		"--etherbase", coinbase, "--shh",
 		"console")
 
 	// Gather all the infos the welcome message needs to contain
-	geth.setTemplateFunc("goos", func() string { return runtime.GOOS })
-	geth.setTemplateFunc("gover", runtime.Version)
-	geth.setTemplateFunc("gethver", func() string { return verString })
-	geth.setTemplateFunc("niltime", func() string { return time.Unix(0, 0).Format(time.RFC1123) })
-	geth.setTemplateFunc("apis", func() []string {
-		apis := append(strings.Split(rpc.DefaultIPCApis, ","), rpc.MetadataApi)
-		sort.Strings(apis)
-		return apis
-	})
+	gmc.SetTemplateFunc("goos", func() string { return runtime.GOOS })
+	gmc.SetTemplateFunc("goarch", func() string { return runtime.GOARCH })
+	gmc.SetTemplateFunc("gover", runtime.Version)
+	gmc.SetTemplateFunc("gmcver", func() string { return params.Version })
+	gmc.SetTemplateFunc("niltime", func() string { return time.Unix(0, 0).Format(time.RFC1123) })
+	gmc.SetTemplateFunc("apis", func() string { return ipcAPIs })
 
 	// Verify the actual welcome message to the required template
-	geth.expect(`
-Welcome to the Geth JavaScript console!
+	gmc.Expect(`
+Welcome to the GMC JavaScript console!
 
-instance: Geth/v{{gethver}}/{{goos}}/{{gover}}
+instance: GMC/v{{gmcver}}/{{goos}}-{{goarch}}/{{gover}}
 coinbase: {{.Etherbase}}
 at block: 0 ({{niltime}})
  datadir: {{.Datadir}}
- modules:{{range apis}} {{.}}:1.0{{end}}
+ modules: {{apis}}
 
 > {{.InputLine "exit"}}
 `)
-	geth.expectExit()
+	gmc.ExpectExit()
 }
 
 // Tests that a console can be attached to a running node via various means.
@@ -74,7 +75,7 @@ func TestIPCAttachWelcome(t *testing.T) {
 	coinbase := "0x8605cdbbdb6d264aa742e77020dcbc58fcdce182"
 	var ipc string
 	if runtime.GOOS == "windows" {
-		ipc = `\\.\pipe\geth` + strconv.Itoa(trulyRandInt(100000, 999999))
+		ipc = `\\.\pipe\gmc` + strconv.Itoa(trulyRandInt(100000, 999999))
 	} else {
 		ws := tmpdir(t)
 		defer os.RemoveAll(ws)
@@ -82,84 +83,76 @@ func TestIPCAttachWelcome(t *testing.T) {
 	}
 	// Note: we need --shh because testAttachWelcome checks for default
 	// list of ipc modules and shh is included there.
-	geth := runGeth(t,
+	gmc := runGMC(t,
 		"--port", "0", "--maxpeers", "0", "--nodiscover", "--nat", "none",
 		"--etherbase", coinbase, "--shh", "--ipcpath", ipc)
 
 	time.Sleep(2 * time.Second) // Simple way to wait for the RPC endpoint to open
-	testAttachWelcome(t, geth, "ipc:"+ipc)
+	testAttachWelcome(t, gmc, "ipc:"+ipc, ipcAPIs)
 
-	geth.interrupt()
-	geth.expectExit()
+	gmc.Interrupt()
+	gmc.ExpectExit()
 }
 
 func TestHTTPAttachWelcome(t *testing.T) {
 	coinbase := "0x8605cdbbdb6d264aa742e77020dcbc58fcdce182"
 	port := strconv.Itoa(trulyRandInt(1024, 65536)) // Yeah, sometimes this will fail, sorry :P
-	geth := runGeth(t,
+	gmc  := runGMC(t,
 		"--port", "0", "--maxpeers", "0", "--nodiscover", "--nat", "none",
 		"--etherbase", coinbase, "--rpc", "--rpcport", port)
 
 	time.Sleep(2 * time.Second) // Simple way to wait for the RPC endpoint to open
-	testAttachWelcome(t, geth, "http://localhost:"+port)
+	testAttachWelcome(t, gmc, "http://localhost:"+port, httpAPIs)
 
-	geth.interrupt()
-	geth.expectExit()
+	gmc.Interrupt()
+	gmc.ExpectExit()
 }
 
 func TestWSAttachWelcome(t *testing.T) {
 	coinbase := "0x8605cdbbdb6d264aa742e77020dcbc58fcdce182"
 	port := strconv.Itoa(trulyRandInt(1024, 65536)) // Yeah, sometimes this will fail, sorry :P
 
-	geth := runGeth(t,
+	gmc := runGMC(t,
 		"--port", "0", "--maxpeers", "0", "--nodiscover", "--nat", "none",
 		"--etherbase", coinbase, "--ws", "--wsport", port)
 
 	time.Sleep(2 * time.Second) // Simple way to wait for the RPC endpoint to open
-	testAttachWelcome(t, geth, "ws://localhost:"+port)
+	testAttachWelcome(t, gmc, "ws://localhost:"+port, httpAPIs)
 
-	geth.interrupt()
-	geth.expectExit()
+	gmc.Interrupt()
+	gmc.ExpectExit()
 }
 
-func testAttachWelcome(t *testing.T, geth *testgeth, endpoint string) {
-	// Attach to a running geth note and terminate immediately
-	attach := runGeth(t, "attach", endpoint)
-	defer attach.expectExit()
-	attach.stdin.Close()
+func testAttachWelcome(t *testing.T, gmc *testgmc, endpoint, apis string) {
+	// Attach to a running gmc note and terminate immediately
+	attach := runGMC(t, "attach", endpoint)
+	defer attach.ExpectExit()
+	attach.CloseStdin()
 
 	// Gather all the infos the welcome message needs to contain
-	attach.setTemplateFunc("goos", func() string { return runtime.GOOS })
-	attach.setTemplateFunc("gover", runtime.Version)
-	attach.setTemplateFunc("gethver", func() string { return verString })
-	attach.setTemplateFunc("etherbase", func() string { return geth.Etherbase })
-	attach.setTemplateFunc("niltime", func() string { return time.Unix(0, 0).Format(time.RFC1123) })
-	attach.setTemplateFunc("ipc", func() bool { return strings.HasPrefix(endpoint, "ipc") })
-	attach.setTemplateFunc("datadir", func() string { return geth.Datadir })
-	attach.setTemplateFunc("apis", func() []string {
-		var apis []string
-		if strings.HasPrefix(endpoint, "ipc") {
-			apis = append(strings.Split(rpc.DefaultIPCApis, ","), rpc.MetadataApi)
-		} else {
-			apis = append(strings.Split(rpc.DefaultHTTPApis, ","), rpc.MetadataApi)
-		}
-		sort.Strings(apis)
-		return apis
-	})
+	attach.SetTemplateFunc("goos", func() string { return runtime.GOOS })
+	attach.SetTemplateFunc("goarch", func() string { return runtime.GOARCH })
+	attach.SetTemplateFunc("gover", runtime.Version)
+	attach.SetTemplateFunc("gmcver", func() string { return params.Version })
+	attach.SetTemplateFunc("etherbase", func() string { return gmc.Etherbase })
+	attach.SetTemplateFunc("niltime", func() string { return time.Unix(0, 0).Format(time.RFC1123) })
+	attach.SetTemplateFunc("ipc", func() bool { return strings.HasPrefix(endpoint, "ipc") })
+	attach.SetTemplateFunc("datadir", func() string { return gmc.Datadir })
+	attach.SetTemplateFunc("apis", func() string { return apis })
 
 	// Verify the actual welcome message to the required template
-	attach.expect(`
-Welcome to the Geth JavaScript console!
+	attach.Expect(`
+Welcome to the GMC JavaScript console!
 
-instance: Geth/v{{gethver}}/{{goos}}/{{gover}}
+instance: GMC/v{{gmcver}}/{{goos}}-{{goarch}}/{{gover}}
 coinbase: {{etherbase}}
 at block: 0 ({{niltime}}){{if ipc}}
  datadir: {{datadir}}{{end}}
- modules:{{range apis}} {{.}}:1.0{{end}}
+ modules: {{apis}}
 
 > {{.InputLine "exit" }}
 `)
-	attach.expectExit()
+	attach.ExpectExit()
 }
 
 // trulyRandInt generates a crypto random integer used by the console tests to

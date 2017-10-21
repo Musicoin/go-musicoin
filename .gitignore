@@ -13,8 +13,7 @@
 .ethtest
 */**/*tx_database*
 */**/*dapps*
-Godeps/_workspace/pkg
-Godeps/_workspace/bin
+build/_vendor/pkg
 
 #*
 .#*
@@ -27,7 +26,11 @@ Godeps/_workspace/bin
 /build/_workspace/
 /build/bin/
 /geth*.zip
+/gmc*.zip
 
 # travis
 profile.tmp
 profile.cov
+
+# IdeaIDE
+.idea

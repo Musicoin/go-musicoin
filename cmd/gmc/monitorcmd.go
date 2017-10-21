@@ -21,10 +21,9 @@ import (
 	"math"
 	"reflect"
 	"runtime"
+	"sort"
 	"strings"
 	"time"
-
-	"sort"
 
 	"github.com/ethereum/go-ethereum/cmd/utils"
 	"github.com/ethereum/go-ethereum/node"
@@ -36,7 +35,7 @@ import (
 var (
 	monitorCommandAttachFlag = cli.StringFlag{
 		Name:  "attach",
-		Value: "ipc:" + node.DefaultIPCEndpoint(),
+		Value: node.DefaultIPCEndpoint(clientIdentifier),
 		Usage: "API endpoint to attach to",
 	}
 	monitorCommandRowsFlag = cli.IntFlag{
@@ -50,11 +49,13 @@ var (
 		Usage: "Refresh interval in seconds",
 	}
 	monitorCommand = cli.Command{
-		Action: monitor,
-		Name:   "monitor",
-		Usage:  `Geth Monitor: node metrics monitoring and visualization`,
+		Action:    utils.MigrateFlags(monitor), // keep track of migration progress
+		Name:      "monitor",
+		Usage:     "Monitor and visualize node metrics",
+		ArgsUsage: " ",
+		Category:  "MONITOR COMMANDS",
 		Description: `
-The Geth monitor is a tool to collect and visualize various internal metrics
+The GMC monitor is a tool to collect and visualize various internal metrics
 gathered by the node, supporting different chart types as well as the capacity
 to display multiple metrics simultaneously.
 `,
@@ -69,13 +70,13 @@ to display multiple metrics simultaneously.
 // monitor starts a terminal UI based monitoring tool for the requested metrics.
 func monitor(ctx *cli.Context) error {
 	var (
-		client rpc.Client
+		client *rpc.Client
 		err    error
 	)
 	// Attach to an Ethereum node over IPC or RPC
 	endpoint := ctx.String(monitorCommandAttachFlag.Name)
-	if client, err = utils.NewRemoteRPCClientFromString(endpoint); err != nil {
-		utils.Fatalf("Unable to attach to geth node: %v", err)
+	if client, err = dialRPC(endpoint); err != nil {
+		utils.Fatalf("Unable to attach to gmc node: %v", err)
 	}
 	defer client.Close()
 
@@ -92,7 +93,7 @@ func monitor(ctx *cli.Context) error {
 		if len(list) > 0 {
 			utils.Fatalf("No metrics specified.\n\nAvailable:\n - %s", strings.Join(list, "\n - "))
 		} else {
-			utils.Fatalf("No metrics collected by geth (--%s).\n", utils.MetricsEnabledFlag.Name)
+			utils.Fatalf("No metrics collected by gmc (--%s).\n", utils.MetricsEnabledFlag.Name)
 		}
 	}
 	sort.Strings(monitored)
@@ -157,32 +158,12 @@ func monitor(ctx *cli.Context) error {
 	return nil
 }
 
-// retrieveMetrics contacts the attached geth node and retrieves the entire set
+// retrieveMetrics contacts the attached gmc node and retrieves the entire set
 // of collected system metrics.
-func retrieveMetrics(client rpc.Client) (map[string]interface{}, error) {
-	req := map[string]interface{}{
-		"id":      new(int64),
-		"method":  "debug_metrics",
-		"jsonrpc": "2.0",
-		"params":  []interface{}{true},
-	}
-
-	if err := client.Send(req); err != nil {
-		return nil, err
-	}
-
-	var res rpc.JSONSuccessResponse
-	if err := client.Recv(&res); err != nil {
-		return nil, err
-	}
-
-	if res.Result != nil {
-		if mets, ok := res.Result.(map[string]interface{}); ok {
-			return mets, nil
-		}
-	}
-
-	return nil, fmt.Errorf("unable to retrieve metrics")
+func retrieveMetrics(client *rpc.Client) (map[string]interface{}, error) {
+	var metrics map[string]interface{}
+	err := client.Call(&metrics, "debug_metrics", true)
+	return metrics, err
 }
 
 // resolveMetrics takes a list of input metric patterns, and resolves each to one
@@ -255,8 +236,9 @@ func expandMetrics(metrics map[string]interface{}, path string) []string {
 
 // fetchMetric iterates over the metrics map and retrieves a specific one.
 func fetchMetric(metrics map[string]interface{}, metric string) float64 {
-	parts, found := strings.Split(metric, "/"), true
+	parts := strings.Split(metric, "/")
 	for _, part := range parts[:len(parts)-1] {
+		var found bool
 		metrics, found = metrics[part].(map[string]interface{})
 		if !found {
 			return 0
@@ -270,7 +252,7 @@ func fetchMetric(metrics map[string]interface{}, metric string) float64 {
 
 // refreshCharts retrieves a next batch of metrics, and inserts all the new
 // values into the active datasets and charts
-func refreshCharts(client rpc.Client, metrics []string, data [][]float64, units []int, charts []*termui.LineChart, ctx *cli.Context, footer *termui.Par) (realign bool) {
+func refreshCharts(client *rpc.Client, metrics []string, data [][]float64, units []int, charts []*termui.LineChart, ctx *cli.Context, footer *termui.Par) (realign bool) {
 	values, err := retrieveMetrics(client)
 	for i, metric := range metrics {
 		if len(data) < 512 {

@@ -14,12 +14,13 @@
 // You should have received a copy of the GNU General Public License
 // along with go-ethereum. If not, see <http://www.gnu.org/licenses/>.
 
-// Contains the geth command usage template and generator.
+// Contains the gmc command usage template and generator.
 
 package main
 
 import (
 	"io"
+	"sort"
 
 	"github.com/ethereum/go-ethereum/cmd/utils"
 	"github.com/ethereum/go-ethereum/internal/debug"
@@ -29,6 +30,8 @@ import (
 // AppHelpTemplate is the test template for the default, global app help topic.
 var AppHelpTemplate = `NAME:
    {{.App.Name}} - {{.App.Usage}}
+
+   Copyright 2013-2017 The go-ethereum Authors
 
 USAGE:
    {{.App.HelpName}} [options]{{if .App.Commands}} command [command options]{{end}} {{if .App.ArgsUsage}}{{.App.ArgsUsage}}{{else}}[arguments...]{{end}}
@@ -62,17 +65,53 @@ var AppHelpFlagGroups = []flagGroup{
 	{
 		Name: "ETHEREUM",
 		Flags: []cli.Flag{
+			configFileFlag,
 			utils.DataDirFlag,
 			utils.KeyStoreDirFlag,
+			utils.NoUSBFlag,
 			utils.NetworkIdFlag,
-			utils.OlympicFlag,
-			utils.TestNetFlag,
+			utils.TestnetFlag,
+			utils.RinkebyFlag,
 			utils.DevModeFlag,
+			utils.SyncModeFlag,
+			utils.EthStatsURLFlag,
 			utils.IdentityFlag,
-			utils.FastSyncFlag,
+			utils.LightServFlag,
+			utils.LightPeersFlag,
 			utils.LightKDFFlag,
+		},
+	},
+	{
+		Name: "ETHASH",
+		Flags: []cli.Flag{
+			utils.EthashCacheDirFlag,
+			utils.EthashCachesInMemoryFlag,
+			utils.EthashCachesOnDiskFlag,
+			utils.EthashDatasetDirFlag,
+			utils.EthashDatasetsInMemoryFlag,
+			utils.EthashDatasetsOnDiskFlag,
+		},
+	},
+	{
+		Name: "TRANSACTION POOL",
+		Flags: []cli.Flag{
+			utils.TxPoolNoLocalsFlag,
+			utils.TxPoolJournalFlag,
+			utils.TxPoolRejournalFlag,
+			utils.TxPoolPriceLimitFlag,
+			utils.TxPoolPriceBumpFlag,
+			utils.TxPoolAccountSlotsFlag,
+			utils.TxPoolGlobalSlotsFlag,
+			utils.TxPoolAccountQueueFlag,
+			utils.TxPoolGlobalQueueFlag,
+			utils.TxPoolLifetimeFlag,
+		},
+	},
+	{
+		Name: "PERFORMANCE TUNING",
+		Flags: []cli.Flag{
 			utils.CacheFlag,
-			utils.BlockchainVersionFlag,
+			utils.TrieCacheGenFlag,
 		},
 	},
 	{
@@ -95,7 +134,6 @@ var AppHelpFlagGroups = []flagGroup{
 			utils.WSApiFlag,
 			utils.WSAllowedOriginsFlag,
 			utils.IPCDisabledFlag,
-			utils.IPCApiFlag,
 			utils.IPCPathFlag,
 			utils.RPCCORSDomainFlag,
 			utils.JSpathFlag,
@@ -107,11 +145,15 @@ var AppHelpFlagGroups = []flagGroup{
 		Name: "NETWORKING",
 		Flags: []cli.Flag{
 			utils.BootnodesFlag,
+			utils.BootnodesV4Flag,
+			utils.BootnodesV5Flag,
 			utils.ListenPortFlag,
 			utils.MaxPeersFlag,
 			utils.MaxPendingPeersFlag,
 			utils.NATFlag,
 			utils.NoDiscoverFlag,
+			utils.DiscoveryV5Flag,
+			utils.NetrestrictFlag,
 			utils.NodeKeyFileFlag,
 			utils.NodeKeyHexFlag,
 		},
@@ -121,8 +163,6 @@ var AppHelpFlagGroups = []flagGroup{
 		Flags: []cli.Flag{
 			utils.MiningEnabledFlag,
 			utils.MinerThreadsFlag,
-			utils.MiningGPUFlag,
-			utils.AutoDAGFlag,
 			utils.EtherbaseFlag,
 			utils.TargetGasLimitFlag,
 			utils.GasPriceFlag,
@@ -132,20 +172,14 @@ var AppHelpFlagGroups = []flagGroup{
 	{
 		Name: "GAS PRICE ORACLE",
 		Flags: []cli.Flag{
-			utils.GpoMinGasPriceFlag,
-			utils.GpoMaxGasPriceFlag,
-			utils.GpoFullBlockRatioFlag,
-			utils.GpobaseStepDownFlag,
-			utils.GpobaseStepUpFlag,
-			utils.GpobaseCorrectionFactorFlag,
+			utils.GpoBlocksFlag,
+			utils.GpoPercentileFlag,
 		},
 	},
 	{
 		Name: "VIRTUAL MACHINE",
 		Flags: []cli.Flag{
-			utils.VMEnableJitFlag,
-			utils.VMForceJitFlag,
-			utils.VMJitCacheFlag,
+			utils.VMEnableDebugFlag,
 		},
 	},
 	{
@@ -153,21 +187,56 @@ var AppHelpFlagGroups = []flagGroup{
 		Flags: append([]cli.Flag{
 			utils.MetricsEnabledFlag,
 			utils.FakePoWFlag,
+			utils.NoCompactionFlag,
 		}, debug.Flags...),
 	},
 	{
-		Name: "EXPERIMENTAL",
+		Name:  "WHISPER (EXPERIMENTAL)",
+		Flags: whisperFlags,
+	},
+	{
+		Name: "DEPRECATED",
 		Flags: []cli.Flag{
-			utils.WhisperEnabledFlag,
-			utils.NatspecEnabledFlag,
+			utils.FastSyncFlag,
+			utils.LightModeFlag,
 		},
 	},
 	{
-		Name: "MISCELLANEOUS",
-		Flags: []cli.Flag{
-			utils.SolcPathFlag,
-		},
+		Name: "MISC",
 	},
+}
+
+// byCategory sorts an array of flagGroup by Name in the order
+// defined in AppHelpFlagGroups.
+type byCategory []flagGroup
+
+func (a byCategory) Len() int      { return len(a) }
+func (a byCategory) Swap(i, j int) { a[i], a[j] = a[j], a[i] }
+func (a byCategory) Less(i, j int) bool {
+	iCat, jCat := a[i].Name, a[j].Name
+	iIdx, jIdx := len(AppHelpFlagGroups), len(AppHelpFlagGroups) // ensure non categorized flags come last
+
+	for i, group := range AppHelpFlagGroups {
+		if iCat == group.Name {
+			iIdx = i
+		}
+		if jCat == group.Name {
+			jIdx = i
+		}
+	}
+
+	return iIdx < jIdx
+}
+
+func flagCategory(flag cli.Flag) string {
+	for _, category := range AppHelpFlagGroups {
+		for _, flg := range category.Flags {
+			if flg.GetName() == flag.GetName() {
+				return category.Name
+			}
+		}
+	}
+	return "MISC"
 }
 
 func init() {
@@ -179,6 +248,7 @@ func init() {
 		App        interface{}
 		FlagGroups []flagGroup
 	}
+
 	// Override the default app help printer, but only for the global app help
 	originalHelpPrinter := cli.HelpPrinter
 	cli.HelpPrinter = func(w io.Writer, tmpl string, data interface{}) {
@@ -208,6 +278,27 @@ func init() {
 			}
 			// Render out custom usage screen
 			originalHelpPrinter(w, tmpl, helpData{data, AppHelpFlagGroups})
+		} else if tmpl == utils.CommandHelpTemplate {
+			// Iterate over all command specific flags and categorize them
+			categorized := make(map[string][]cli.Flag)
+			for _, flag := range data.(cli.Command).Flags {
+				if _, ok := categorized[flag.String()]; !ok {
+					categorized[flagCategory(flag)] = append(categorized[flagCategory(flag)], flag)
+				}
+			}
+
+			// sort to get a stable ordering
+			sorted := make([]flagGroup, 0, len(categorized))
+			for cat, flgs := range categorized {
+				sorted = append(sorted, flagGroup{cat, flgs})
+			}
+			sort.Sort(byCategory(sorted))
+
+			// add sorted array to data and render with default printer
+			originalHelpPrinter(w, tmpl, map[string]interface{}{
+				"cmd":              data,
+				"categorizedFlags": sorted,
+			})
 		} else {
 			originalHelpPrinter(w, tmpl, data)
 		}
