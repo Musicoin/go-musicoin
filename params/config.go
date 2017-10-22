@@ -154,7 +154,7 @@ func (c *ChainConfig) String() string {
 	default:
 		engine = "unknown"
 	}
-	return fmt.Sprintf("{ChainID: %v Homestead: %v MCIP-3 UBI: %v DAO: %v DAOSupport: %v EIP150: %v EIP155: %v EIP158: %v Byzantium: %v Engine: %v}",
+	return fmt.Sprintf("{ChainID: %v Homestead: %v MCIP3-UBI: %v DAO: %v DAOSupport: %v EIP150: %v EIP155: %v EIP158: %v Byzantium: %v Engine: %v}",
 		c.ChainId,
 		c.HomesteadBlock,
 		c.UBIForkBlock,
@@ -173,7 +173,7 @@ func (c *ChainConfig) IsHomestead(num *big.Int) bool {
 	return isForked(c.HomesteadBlock, num)
 }
 
-// IsUBIFork returns whether num is either equal to the MCIP-3 block or greater.
+// IsUBIFork returns whether num is either equal to the MCIP3-UBI block or greater.
 func (c *ChainConfig) IsUBIFork(num *big.Int) bool {
 	return isForked(c.UBIForkBlock, num)
 }
@@ -239,7 +239,7 @@ func (c *ChainConfig) checkCompatible(newcfg *ChainConfig, head *big.Int) *Confi
 		return newCompatError("Homestead fork block", c.HomesteadBlock, newcfg.HomesteadBlock)
 	}
 	if isForkIncompatible(c.UBIForkBlock, newcfg.UBIForkBlock, head) {
-		return newCompatError("MCIP-3 UBI fork block", c.UBIForkBlock, newcfg.UBIForkBlock)
+		return newCompatError("MCIP3-UBI fork block", c.UBIForkBlock, newcfg.UBIForkBlock)
 	}
 	if isForkIncompatible(c.DAOForkBlock, newcfg.DAOForkBlock, head) {
 		return newCompatError("DAO fork block", c.DAOForkBlock, newcfg.DAOForkBlock)
