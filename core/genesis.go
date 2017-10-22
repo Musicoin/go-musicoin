@@ -310,6 +310,7 @@ func GenesisBlockForTesting(db ethdb.Database, addr common.Address, balance *big
 func DefaultGenesisBlock() *Genesis {
 	return &Genesis{
 		Config:     params.MainnetChainConfig,
+		Timestamp:  0,
 		Nonce:      66,
 		ExtraData:  hexutil.MustDecode("0x11bbe8db4e347b4e8c937c1c8370e4b5ed33adb3db69cbdb7a38e1e50b1b82fa"),
 		GasLimit:   5000,
@@ -332,11 +333,12 @@ func MusicoinGenesisBlock() *Genesis {
 	}
 }
 
-// DefaultTestnetGenesisBlock returns the Ropsten network genesis block.
+// DefaultTestnetGenesisBlock returns the PoW network genesis block.
 func DefaultTestnetGenesisBlock() *Genesis {
 	return &Genesis{
 		Config:     params.TestnetChainConfig,
-		Nonce:      66,
+		Timestamp:  0,
+		Nonce:      23,
 		ExtraData:  hexutil.MustDecode("0x3535353535353535353535353535353535353535353535353535353535353535"),
 		GasLimit:   16777216,
 		Difficulty: big.NewInt(1048576),
@@ -344,13 +346,14 @@ func DefaultTestnetGenesisBlock() *Genesis {
 	}
 }
 
-// DefaultRinkebyGenesisBlock returns the Rinkeby network genesis block.
+// DefaultRinkebyGenesisBlock returns the PoA network genesis block.
 func DefaultRinkebyGenesisBlock() *Genesis {
 	return &Genesis{
 		Config:     params.RinkebyChainConfig,
-		Timestamp:  1492009146,
+		Timestamp:  0,
+		Nonce:      23,
 		ExtraData:  hexutil.MustDecode("0x52657370656374206d7920617574686f7269746168207e452e436172746d616e42eb768f2244c8811c63729a21a3569731535f067ffc57839b00206d1ad20c69a1981b489f772031b279182d99e65703f0076e4812653aab85fca0f00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"),
-		GasLimit:   4700000,
+		GasLimit:   16777216,
 		Difficulty: big.NewInt(1),
 		Alloc:      decodePrealloc(rinkebyAllocData),
 	}
@@ -360,8 +363,8 @@ func DefaultRinkebyGenesisBlock() *Genesis {
 func DevGenesisBlock() *Genesis {
 	return &Genesis{
 		Config:     params.AllProtocolChanges,
-		Nonce:      42,
-		GasLimit:   4712388,
+		Nonce:      23,
+		GasLimit:   16777216,
 		Difficulty: big.NewInt(131072),
 		Alloc:      decodePrealloc(devAllocData),
 	}

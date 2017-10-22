@@ -131,11 +131,11 @@ var (
 	}
 	TestnetFlag = cli.BoolFlag{
 		Name:  "testnet",
-		Usage: "Ropsten network: pre-configured proof-of-work test network",
+		Usage: "PoW network: pre-configured proof-of-work test network",
 	}
 	RinkebyFlag = cli.BoolFlag{
 		Name:  "rinkeby",
-		Usage: "Rinkeby network: pre-configured proof-of-authority test network",
+		Usage: "PoA network: pre-configured proof-of-authority test network",
 	}
 	DevModeFlag = cli.BoolFlag{
 		Name:  "dev",
