@@ -29,50 +29,50 @@ var (
 )
 
 var (
-	// MainnetChainConfig is the chain parameters to run a node on the main network.
+	// MainnetChainConfig is the chain parameters to run a node on the main Musicoin network.
 	MainnetChainConfig = &ChainConfig{
 		ChainId:        big.NewInt(7762959),
 		HomesteadBlock: big.NewInt(1150000),
 		UBIForkBlock:   big.NewInt(1200001),
-		DAOForkBlock:   big.NewInt(36028797018963967),
+		DAOForkBlock:   nil,
 		DAOForkSupport: false,
-		EIP150Block:    big.NewInt(36028797018963967),
+		EIP150Block:    big.NewInt(1987654),
 		EIP150Hash:     common.HexToHash("0x"),
-		EIP155Block:    big.NewInt(36028797018963967),
-		EIP158Block:    big.NewInt(36028797018963967),
-		ByzantiumBlock: big.NewInt(36028797018963967),
+		EIP155Block:    big.NewInt(1987654),
+		EIP158Block:    big.NewInt(1987654),
+		ByzantiumBlock: big.NewInt(1987654),
 
 		Ethash: new(EthashConfig),
 	}
 
-	// TestnetChainConfig contains the chain parameters to run a node on the Ropsten test network.
+	// TestnetChainConfig contains the chain parameters to run a node on the PoW test network.
 	TestnetChainConfig = &ChainConfig{
 		ChainId:        big.NewInt(7762955),
-		HomesteadBlock: big.NewInt(0),
-		UBIForkBlock:   big.NewInt(0),
-		DAOForkBlock:   big.NewInt(36028797018963967),
+		HomesteadBlock: big.NewInt(23),
+		UBIForkBlock:   big.NewInt(23),
+		DAOForkBlock:   nil,
 		DAOForkSupport: false,
-		EIP150Block:    big.NewInt(0),
-		EIP150Hash:     common.HexToHash("0x41941023680923e0fe4d74a34bdac8141f2540e3ae90623718e47d66d1ca4a2d"),
-		EIP155Block:    big.NewInt(10),
-		EIP158Block:    big.NewInt(10),
-		ByzantiumBlock: big.NewInt(1700000),
+		EIP150Block:    big.NewInt(42),
+		EIP150Hash:     common.HexToHash("0x"),
+		EIP155Block:    big.NewInt(42),
+		EIP158Block:    big.NewInt(42),
+		ByzantiumBlock: big.NewInt(42),
 
 		Ethash: new(EthashConfig),
 	}
 
-	// RinkebyChainConfig contains the chain parameters to run a node on the Rinkeby test network.
+	// RinkebyChainConfig contains the chain parameters to run a node on the PoA test network.
 	RinkebyChainConfig = &ChainConfig{
-		ChainId:        big.NewInt(4),
-		HomesteadBlock: big.NewInt(1),
-		UBIForkBlock:   big.NewInt(0),
+		ChainId:        big.NewInt(7762954),
+		HomesteadBlock: big.NewInt(23),
+		UBIForkBlock:   big.NewInt(23),
 		DAOForkBlock:   nil,
-		DAOForkSupport: true,
-		EIP150Block:    big.NewInt(2),
-		EIP150Hash:     common.HexToHash("0x9b095b36c15eaf13044373aef8ee0bd3a382a5abb92e402afa44b8249c3a90e9"),
-		EIP155Block:    big.NewInt(3),
-		EIP158Block:    big.NewInt(3),
-		ByzantiumBlock: big.NewInt(1035301),
+		DAOForkSupport: false,
+		EIP150Block:    big.NewInt(42),
+		EIP150Hash:     common.HexToHash("0x"),
+		EIP155Block:    big.NewInt(42),
+		EIP158Block:    big.NewInt(42),
+		ByzantiumBlock: big.NewInt(42),
 
 		Clique: &CliqueConfig{
 			Period: 15,
