@@ -1,5 +1,8 @@
-// Copyright 2017 The go-ethereum Authors
-// This file is part of the go-ethereum library.
+// Copyright 2017 The Go-Ethereum Authors
+// This file is part of the Go-Ethereum library.
+//
+// Copyright 2017 The Go-Musicoin Authors
+// This file is part of the Go-Musicoin library.
 //
 // The go-ethereum library is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Lesser General Public License as published by
@@ -550,6 +553,7 @@ func AccumulateRewards(config *params.ChainConfig, state *state.StateDB, header 
 		reward.Add(reward, r)
 	}
 
+	// Activate MCIP3-UBI hardfork
 	if config.IsUBIFork(header.Number) {
 		state.AddBalance(header.Coinbase, mcip3Reward)
 		state.AddBalance(common.HexToAddress("0x00eFdd5883eC628983E9063c7d969fE268BBf310"), ubiReservoir)
