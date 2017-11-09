@@ -204,7 +204,7 @@ Passphrase: {{.InputLine "foobar"}}
 func TestUnlockFlagPasswordFile(t *testing.T) {
 	datadir := tmpDatadirWithKeystore(t)
 	gmc := runGMC(t,
-		"--datadir", datadir, "--nat", "none", "--nodiscover", "--dev",
+		"--datadir", datadir, "--nat", "none", "--nodiscover", "--maxpeers", "0", "--port", "0",
 		"--password", "testdata/passwords.txt", "--unlock", "0,2",
 		"js", "testdata/empty.js")
 	gmc.ExpectExit()
@@ -224,7 +224,7 @@ func TestUnlockFlagPasswordFile(t *testing.T) {
 func TestUnlockFlagPasswordFileWrongPassword(t *testing.T) {
 	datadir := tmpDatadirWithKeystore(t)
 	gmc := runGMC(t,
-		"--datadir", datadir, "--nat", "none", "--nodiscover", "--dev",
+		"--datadir", datadir, "--nat", "none", "--nodiscover", "--maxpeers", "0", "--port", "0",
 		"--password", "testdata/wrong-passwords.txt", "--unlock", "0,2")
 	defer gmc.ExpectExit()
 	gmc.Expect(`
@@ -235,7 +235,7 @@ Fatal: Failed to unlock account 0 (could not decrypt key with given passphrase)
 func TestUnlockFlagAmbiguous(t *testing.T) {
 	store := filepath.Join("..", "..", "accounts", "keystore", "testdata", "dupes")
 	gmc := runGMC(t,
-		"--keystore", store, "--nat", "none", "--nodiscover", "--dev",
+		"--keystore", store, "--nat", "none", "--nodiscover", "--maxpeers", "0", "--port", "0",
 		"--unlock", "f466859ead1932d743d622cb74fc058882e8648a",
 		"js", "testdata/empty.js")
 	defer gmc.ExpectExit()
@@ -273,7 +273,7 @@ In order to avoid this warning, you need to remove the following duplicate key f
 func TestUnlockFlagAmbiguousWrongPassword(t *testing.T) {
 	store := filepath.Join("..", "..", "accounts", "keystore", "testdata", "dupes")
 	gmc := runGMC(t,
-		"--keystore", store, "--nat", "none", "--nodiscover", "--dev",
+		"--keystore", store, "--nat", "none", "--nodiscover", "--maxpeers", "0", "--port", "0",
 		"--unlock", "f466859ead1932d743d622cb74fc058882e8648a")
 	defer gmc.ExpectExit()
 
