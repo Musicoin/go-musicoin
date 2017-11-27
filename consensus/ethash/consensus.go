@@ -39,10 +39,11 @@ import (
 
 // Ethash proof-of-work protocol constants.
 var (
-	musicBlockReward     *big.Int = new(big.Int).Mul(big.NewInt(314), big.NewInt(1e+18))
-	mcip3BlockReward     *big.Int = new(big.Int).Mul(big.NewInt(250), big.NewInt(1e+18))
-	ubiBlockReward       *big.Int = new(big.Int).Mul(big.NewInt(50), big.NewInt(1e+18))
-	devBlockReward       *big.Int = new(big.Int).Mul(big.NewInt(14), big.NewInt(1e+18))
+	FrontierBlockReward     *big.Int = new(big.Int).Mul(big.NewInt(314), big.NewInt(1e+18))
+	Mcip3BlockReward     *big.Int = new(big.Int).Mul(big.NewInt(250), big.NewInt(1e+18))
+	UbiBlockReward       *big.Int = new(big.Int).Mul(big.NewInt(50), big.NewInt(1e+18))
+	DevBlockReward       *big.Int = new(big.Int).Mul(big.NewInt(14), big.NewInt(1e+18))
+	ByzantiumBlockReward *big.Int = new(big.Int).Mul(big.NewInt(0), big.NewInt(1e+18))
 	maxUncles                     = 2                 // Maximum number of uncles allowed in a single block
 )
 
@@ -534,10 +535,10 @@ var (
 // TODO (karalabe): Move the chain maker into this package and make this private!
 func AccumulateRewards(config *params.ChainConfig, state *state.StateDB, header *types.Header, uncles []*types.Header) {
 	// Select the correct block reward based on chain progression
-	blockReward := musicBlockReward
-	mcip3Reward := mcip3BlockReward
-	ubiReservoir := ubiBlockReward
-	devReservoir := devBlockReward
+	blockReward := FrontierBlockReward
+	mcip3Reward := Mcip3BlockReward
+	ubiReservoir := UbiBlockReward
+	devReservoir := DevBlockReward
 
 	// Accumulate the rewards for the miner and any included uncles
 	reward := new(big.Int).Set(blockReward)
