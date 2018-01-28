@@ -39,10 +39,11 @@ import (
 
 // Ethash proof-of-work protocol constants.
 var (
-	musicBlockReward     *big.Int = new(big.Int).Mul(big.NewInt(314), big.NewInt(1e+18))
-	mcip3BlockReward     *big.Int = new(big.Int).Mul(big.NewInt(250), big.NewInt(1e+18))
-	ubiBlockReward       *big.Int = new(big.Int).Mul(big.NewInt(50), big.NewInt(1e+18))
-	devBlockReward       *big.Int = new(big.Int).Mul(big.NewInt(14), big.NewInt(1e+18))
+	FrontierBlockReward     *big.Int = new(big.Int).Mul(big.NewInt(314), big.NewInt(1e+18))
+	Mcip3BlockReward     *big.Int = new(big.Int).Mul(big.NewInt(250), big.NewInt(1e+18))
+	UbiBlockReward       *big.Int = new(big.Int).Mul(big.NewInt(50), big.NewInt(1e+18))
+	DevBlockReward       *big.Int = new(big.Int).Mul(big.NewInt(14), big.NewInt(1e+18))
+	ByzantiumBlockReward *big.Int = new(big.Int).Mul(big.NewInt(0), big.NewInt(1e+18))
 	maxUncles                     = 2                 // Maximum number of uncles allowed in a single block
 )
 
@@ -73,7 +74,7 @@ func (ethash *Ethash) Author(header *types.Header) (common.Address, error) {
 // stock Ethereum ethash engine.
 func (ethash *Ethash) VerifyHeader(chain consensus.ChainReader, header *types.Header, seal bool) error {
 	// If we're running a full engine faking, accept any input as valid
-	if ethash.fakeFull {
+	if ethash.config.PowMode == ModeFullFake {
 		return nil
 	}
 	// Short circuit if the header is known, or it's parent not
@@ -94,7 +95,7 @@ func (ethash *Ethash) VerifyHeader(chain consensus.ChainReader, header *types.He
 // a results channel to retrieve the async verifications.
 func (ethash *Ethash) VerifyHeaders(chain consensus.ChainReader, headers []*types.Header, seals []bool) (chan<- struct{}, <-chan error) {
 	// If we're running a full engine faking, accept any input as valid
-	if ethash.fakeFull || len(headers) == 0 {
+	if ethash.config.PowMode == ModeFullFake || len(headers) == 0 {
 		abort, results := make(chan struct{}), make(chan error, len(headers))
 		for i := 0; i < len(headers); i++ {
 			results <- nil
@@ -174,7 +175,7 @@ func (ethash *Ethash) verifyHeaderWorker(chain consensus.ChainReader, headers []
 // rules of the stock Ethereum ethash engine.
 func (ethash *Ethash) VerifyUncles(chain consensus.ChainReader, block *types.Block) error {
 	// If we're running a full engine faking, accept any input as valid
-	if ethash.fakeFull {
+	if ethash.config.PowMode == ModeFullFake {
 		return nil
 	}
 	// Verify that there are at most 2 uncles included in this block
@@ -460,7 +461,7 @@ func calcDifficultyFrontier(time uint64, parent *types.Header) *big.Int {
 // the PoW difficulty requirements.
 func (ethash *Ethash) VerifySeal(chain consensus.ChainReader, header *types.Header) error {
 	// If we're running a fake PoW, accept any seal as valid
-	if ethash.fakeMode {
+	if ethash.config.PowMode == ModeFake || ethash.config.PowMode == ModeFullFake {
 		time.Sleep(ethash.fakeDelay)
 		if ethash.fakeFail == header.Number.Uint64() {
 			return errInvalidPoW
@@ -485,7 +486,7 @@ func (ethash *Ethash) VerifySeal(chain consensus.ChainReader, header *types.Head
 	cache := ethash.cache(number)
 
 	size := datasetSize(number)
-	if ethash.tester {
+	if ethash.config.PowMode == ModeTest {
 		size = 32 * 1024
 	}
 	digest, result := hashimotoLight(size, cache, header.HashNoNonce().Bytes(), header.Nonce.Uint64())
@@ -534,10 +535,10 @@ var (
 // TODO (karalabe): Move the chain maker into this package and make this private!
 func AccumulateRewards(config *params.ChainConfig, state *state.StateDB, header *types.Header, uncles []*types.Header) {
 	// Select the correct block reward based on chain progression
-	blockReward := musicBlockReward
-	mcip3Reward := mcip3BlockReward
-	ubiReservoir := ubiBlockReward
-	devReservoir := devBlockReward
+	blockReward := FrontierBlockReward
+	mcip3Reward := Mcip3BlockReward
+	ubiReservoir := UbiBlockReward
+	devReservoir := DevBlockReward
 
 	// Accumulate the rewards for the miner and any included uncles
 	reward := new(big.Int).Set(blockReward)
