@@ -1,5 +1,8 @@
-// Copyright 2016 The go-ethereum Authors
-// This file is part of the go-ethereum library.
+// Copyright 2016 The Go-Ethereum Authors
+// This file is part of the Go-Ethereum library.
+//
+// Copyright 2017-2018 The Go-Musicoin Authors
+// This file is part of the Go-Musicoin library.
 //
 // The go-ethereum library is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Lesser General Public License as published by
@@ -36,11 +39,11 @@ var (
 		UBIForkBlock:   big.NewInt(1200001),
 		DAOForkBlock:   nil,
 		DAOForkSupport: false,
-		EIP150Block:    big.NewInt(1987654),
+		EIP150Block:    big.NewInt(2000000),
 		EIP150Hash:     common.HexToHash("0x"),
-		EIP155Block:    big.NewInt(1987654),
-		EIP158Block:    big.NewInt(1987654),
-		ByzantiumBlock: big.NewInt(1987654),
+		EIP155Block:    big.NewInt(2000000),
+		EIP158Block:    big.NewInt(2000000),
+		ByzantiumBlock: big.NewInt(2000000),
 
 		Ethash: new(EthashConfig),
 	}
@@ -80,16 +83,21 @@ var (
 		},
 	}
 
-	// AllProtocolChanges contains every protocol change (EIPs)
-	// introduced and accepted by the Ethereum core developers.
+	// AllEthashProtocolChanges contains every protocol change (EIPs) introduced
+	// and accepted by the Ethereum core developers into the Ethash consensus.
 	//
-	// This configuration is intentionally not using keyed fields.
-	// This configuration must *always* have all forks enabled, which
-	// means that all fields must be set at all times. This forces
-	// anyone adding flags to the config to also have to set these
-	// fields.
-	AllProtocolChanges = &ChainConfig{big.NewInt(1337), big.NewInt(1337), big.NewInt(0), nil, false, big.NewInt(0), common.Hash{}, big.NewInt(0), big.NewInt(0), big.NewInt(0), new(EthashConfig), nil}
-	TestChainConfig    = &ChainConfig{big.NewInt(1), big.NewInt(1), big.NewInt(0), nil, false, big.NewInt(0), common.Hash{}, big.NewInt(0), big.NewInt(0), big.NewInt(0), new(EthashConfig), nil}
+	// This configuration is intentionally not using keyed fields to force anyone
+	// adding flags to the config to also have to set these fields.
+	AllEthashProtocolChanges = &ChainConfig{big.NewInt(1337), big.NewInt(0), big.NewInt(0), nil, false, big.NewInt(0), common.Hash{}, big.NewInt(0), big.NewInt(0), big.NewInt(0), new(EthashConfig), nil}
+
+	// AllCliqueProtocolChanges contains every protocol change (EIPs) introduced
+	// and accepted by the Ethereum core developers into the Clique consensus.
+	//
+	// This configuration is intentionally not using keyed fields to force anyone
+	// adding flags to the config to also have to set these fields.
+	AllCliqueProtocolChanges = &ChainConfig{big.NewInt(1337), big.NewInt(0), big.NewInt(0), nil, false, big.NewInt(0), common.Hash{}, big.NewInt(0), big.NewInt(0), big.NewInt(0), nil, &CliqueConfig{Period: 0, Epoch: 30000}}
+
+	TestChainConfig = &ChainConfig{big.NewInt(1337), big.NewInt(0), big.NewInt(0), nil, false, big.NewInt(0), common.Hash{}, big.NewInt(0), big.NewInt(0), big.NewInt(0), new(EthashConfig), nil}
 	TestRules          = TestChainConfig.Rules(new(big.Int))
 )
 
