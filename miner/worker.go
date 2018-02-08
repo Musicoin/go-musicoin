@@ -413,7 +413,6 @@ func (self *worker) commitNewWork() {
 		ParentHash: parent.Hash(),
 		Number:     num.Add(num, common.Big1),
 		GasLimit:   core.CalcGasLimit(parent),
-		GasUsed:    new(big.Int),
 		Extra:      self.extra,
 		Time:       big.NewInt(tstamp),
 	}
@@ -513,6 +512,11 @@ func (env *Work) commitTransactions(mux *event.TypeMux, txs *types.TransactionsB
 	var coalescedLogs []*types.Log
 
 	for {
+		// If we don't have enough gas for any further transactions then we're done
+		if gp.Gas() < params.TxGas {
+			log.Trace("Not enough gas for further transactions", "gp", gp)
+			break
+		}
 		// Retrieve the next transaction and abort if all done
 		tx := txs.Peek()
 		if tx == nil {
@@ -588,7 +592,7 @@ func (env *Work) commitTransactions(mux *event.TypeMux, txs *types.TransactionsB
 func (env *Work) commitTransaction(tx *types.Transaction, bc *core.BlockChain, coinbase common.Address, gp *core.GasPool) (error, []*types.Log) {
 	snap := env.state.Snapshot()
 
-	receipt, _, err := core.ApplyTransaction(env.config, bc, &coinbase, gp, env.state, env.header, tx, env.header.GasUsed, vm.Config{})
+	receipt, _, err := core.ApplyTransaction(env.config, bc, &coinbase, gp, env.state, env.header, tx, &env.header.GasUsed, vm.Config{})
 	if err != nil {
 		env.state.RevertToSnapshot(snap)
 		return err, nil

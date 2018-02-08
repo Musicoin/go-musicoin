@@ -65,9 +65,10 @@ func (hc *httpConn) Close() error {
 	return nil
 }
 
-// DialHTTP creates a new RPC clients that connection to an RPC server over HTTP.
-func DialHTTP(endpoint string) (*Client, error) {
-	req, err := http.NewRequest("POST", endpoint, nil)
+// DialHTTPWithClient creates a new RPC client that connects to an RPC server over HTTP
+// using the provided HTTP Client.
+func DialHTTPWithClient(endpoint string, client *http.Client) (*Client, error) {
+	req, err := http.NewRequest(http.MethodPost, endpoint, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -76,8 +77,13 @@ func DialHTTP(endpoint string) (*Client, error) {
 
 	initctx := context.Background()
 	return newClient(initctx, func(context.Context) (net.Conn, error) {
-		return &httpConn{client: new(http.Client), req: req, closed: make(chan struct{})}, nil
+		return &httpConn{client: client, req: req, closed: make(chan struct{})}, nil
 	})
+}
+
+// DialHTTP creates a new RPC client that connects to an RPC server over HTTP.
+func DialHTTP(endpoint string) (*Client, error) {
+	return DialHTTPWithClient(endpoint, new(http.Client))
 }
 
 func (c *Client) sendHTTP(ctx context.Context, op *requestOp, msg interface{}) error {
@@ -149,7 +155,7 @@ func NewHTTPServer(cors []string, srv *Server) *http.Server {
 // ServeHTTP serves JSON-RPC requests over HTTP.
 func (srv *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	// Permit dumb empty requests for remote health-checks (AWS)
-	if r.Method == "GET" && r.ContentLength == 0 && r.URL.RawQuery == "" {
+	if r.Method == http.MethodGet && r.ContentLength == 0 && r.URL.RawQuery == "" {
 		return
 	}
 	if code, err := validateRequest(r); err != nil {
@@ -169,7 +175,7 @@ func (srv *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 // validateRequest returns a non-zero response code and error message if the
 // request is invalid.
 func validateRequest(r *http.Request) (int, error) {
-	if r.Method == "PUT" || r.Method == "DELETE" {
+	if r.Method == http.MethodPut || r.Method == http.MethodDelete {
 		return http.StatusMethodNotAllowed, errors.New("method not allowed")
 	}
 	if r.ContentLength > maxHTTPRequestContentLength {
@@ -177,7 +183,7 @@ func validateRequest(r *http.Request) (int, error) {
 		return http.StatusRequestEntityTooLarge, err
 	}
 	mt, _, err := mime.ParseMediaType(r.Header.Get("content-type"))
-	if err != nil || mt != contentType {
+	if r.Method != http.MethodOptions && (err != nil || mt != contentType) {
 		err := fmt.Errorf("invalid content type, only %s is supported", contentType)
 		return http.StatusUnsupportedMediaType, err
 	}
@@ -192,7 +198,7 @@ func newCorsHandler(srv *Server, allowedOrigins []string) http.Handler {
 
 	c := cors.New(cors.Options{
 		AllowedOrigins: allowedOrigins,
-		AllowedMethods: []string{"POST", "GET"},
+		AllowedMethods: []string{http.MethodPost, http.MethodGet},
 		MaxAge:         600,
 		AllowedHeaders: []string{"*"},
 	})
