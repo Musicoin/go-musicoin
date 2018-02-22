@@ -39,11 +39,11 @@ var (
 		UBIForkBlock:   big.NewInt(1200001),
 		DAOForkBlock:   nil,
 		DAOForkSupport: false,
-		EIP150Block:    big.NewInt(2000000),
+		EIP150Block:    big.NewInt(2018001),
 		EIP150Hash:     common.HexToHash("0x"),
-		EIP155Block:    big.NewInt(2000000),
-		EIP158Block:    big.NewInt(2000000),
-		ByzantiumBlock: big.NewInt(2000000),
+		EIP155Block:    big.NewInt(2018001),
+		EIP158Block:    big.NewInt(2018001),
+		ByzantiumBlock: big.NewInt(2018001),
 
 		Ethash: new(EthashConfig),
 	}
