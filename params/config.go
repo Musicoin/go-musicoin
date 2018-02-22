@@ -20,85 +20,85 @@
 package params
 
 import (
-	"fmt"
-	"math/big"
+  "fmt"
+  "math/big"
 
-	"github.com/ethereum/go-ethereum/common"
+  "github.com/ethereum/go-ethereum/common"
 )
 
 var (
-	MainnetGenesisHash = common.HexToHash("0x4eba28a4ce8dc0701f94c936a223a8429129b38ca9974ec0e92bf9234ac952e9") // Mainnet genesis hash to enforce below configs on
-	TestnetGenesisHash = common.HexToHash("0x41941023680923e0fe4d74a34bdac8141f2540e3ae90623718e47d66d1ca4a2d") // Testnet genesis hash to enforce below configs on
+  MainnetGenesisHash = common.HexToHash("0x4eba28a4ce8dc0701f94c936a223a8429129b38ca9974ec0e92bf9234ac952e9") // Mainnet genesis hash to enforce below configs on
+  TestnetGenesisHash = common.HexToHash("0x41941023680923e0fe4d74a34bdac8141f2540e3ae90623718e47d66d1ca4a2d") // Testnet genesis hash to enforce below configs on
 )
 
 var (
-	// MainnetChainConfig is the chain parameters to run a node on the main Musicoin network.
-	MainnetChainConfig = &ChainConfig{
-		ChainId:        big.NewInt(7762959),
-		HomesteadBlock: big.NewInt(1150000),
-		UBIForkBlock:   big.NewInt(1200001),
-		DAOForkBlock:   nil,
-		DAOForkSupport: false,
-		EIP150Block:    big.NewInt(2018001),
-		EIP150Hash:     common.HexToHash("0x"),
-		EIP155Block:    big.NewInt(2018001),
-		EIP158Block:    big.NewInt(2018001),
-		ByzantiumBlock: big.NewInt(2018001),
+  // MainnetChainConfig is the chain parameters to run a node on the main Musicoin network.
+  MainnetChainConfig = &ChainConfig{
+    ChainId:        big.NewInt(7762959),
+    HomesteadBlock: big.NewInt(1150000),
+    UBIForkBlock:   big.NewInt(1200001),
+    DAOForkBlock:   nil,
+    DAOForkSupport: false,
+    EIP150Block:    big.NewInt(2222222),
+    EIP150Hash:     common.HexToHash("0x"),
+    EIP155Block:    big.NewInt(2222222),
+    EIP158Block:    big.NewInt(2222222),
+    ByzantiumBlock: big.NewInt(2222222),
 
-		Ethash: new(EthashConfig),
-	}
+    Ethash: new(EthashConfig),
+  }
 
-	// TestnetChainConfig contains the chain parameters to run a node on the PoW test network.
-	TestnetChainConfig = &ChainConfig{
-		ChainId:        big.NewInt(7762955),
-		HomesteadBlock: big.NewInt(23),
-		UBIForkBlock:   big.NewInt(23),
-		DAOForkBlock:   nil,
-		DAOForkSupport: false,
-		EIP150Block:    big.NewInt(42),
-		EIP150Hash:     common.HexToHash("0x"),
-		EIP155Block:    big.NewInt(42),
-		EIP158Block:    big.NewInt(42),
-		ByzantiumBlock: big.NewInt(42),
+  // TestnetChainConfig contains the chain parameters to run a node on the PoW test network.
+  TestnetChainConfig = &ChainConfig{
+    ChainId:        big.NewInt(7762955),
+    HomesteadBlock: big.NewInt(23),
+    UBIForkBlock:   big.NewInt(23),
+    DAOForkBlock:   nil,
+    DAOForkSupport: false,
+    EIP150Block:    big.NewInt(42),
+    EIP150Hash:     common.HexToHash("0x"),
+    EIP155Block:    big.NewInt(42),
+    EIP158Block:    big.NewInt(42),
+    ByzantiumBlock: big.NewInt(42),
 
-		Ethash: new(EthashConfig),
-	}
+    Ethash: new(EthashConfig),
+  }
 
-	// RinkebyChainConfig contains the chain parameters to run a node on the PoA test network.
-	RinkebyChainConfig = &ChainConfig{
-		ChainId:        big.NewInt(7762954),
-		HomesteadBlock: big.NewInt(23),
-		UBIForkBlock:   big.NewInt(23),
-		DAOForkBlock:   nil,
-		DAOForkSupport: false,
-		EIP150Block:    big.NewInt(42),
-		EIP150Hash:     common.HexToHash("0x"),
-		EIP155Block:    big.NewInt(42),
-		EIP158Block:    big.NewInt(42),
-		ByzantiumBlock: big.NewInt(42),
+  // RinkebyChainConfig contains the chain parameters to run a node on the PoA test network.
+  RinkebyChainConfig = &ChainConfig{
+    ChainId:        big.NewInt(7762954),
+    HomesteadBlock: big.NewInt(23),
+    UBIForkBlock:   big.NewInt(23),
+    DAOForkBlock:   nil,
+    DAOForkSupport: false,
+    EIP150Block:    big.NewInt(42),
+    EIP150Hash:     common.HexToHash("0x"),
+    EIP155Block:    big.NewInt(42),
+    EIP158Block:    big.NewInt(42),
+    ByzantiumBlock: big.NewInt(42),
 
-		Clique: &CliqueConfig{
-			Period: 15,
-			Epoch:  30000,
-		},
-	}
+    Clique: &CliqueConfig{
+      Period: 15,
+      Epoch:  30000,
+    },
+  }
 
-	// AllEthashProtocolChanges contains every protocol change (EIPs) introduced
-	// and accepted by the Ethereum core developers into the Ethash consensus.
-	//
-	// This configuration is intentionally not using keyed fields to force anyone
-	// adding flags to the config to also have to set these fields.
-	AllEthashProtocolChanges = &ChainConfig{big.NewInt(1337), big.NewInt(0), big.NewInt(0), nil, false, big.NewInt(0), common.Hash{}, big.NewInt(0), big.NewInt(0), big.NewInt(0), new(EthashConfig), nil}
+  // AllEthashProtocolChanges contains every protocol change (EIPs) introduced
+  // and accepted by the Ethereum core developers into the Ethash consensus.
+  //
+  // This configuration is intentionally not using keyed fields to force anyone
+  // adding flags to the config to also have to set these fields.
+  AllEthashProtocolChanges = &ChainConfig{big.NewInt(1337), big.NewInt(0), big.NewInt(0), nil, false, big.NewInt(0), common.Hash{}, big.NewInt(0), big.NewInt(0), big.NewInt(0), new(EthashConfig), nil}
 
-	// AllCliqueProtocolChanges contains every protocol change (EIPs) introduced
-	// and accepted by the Ethereum core developers into the Clique consensus.
-	//
-	// This configuration is intentionally not using keyed fields to force anyone
-	// adding flags to the config to also have to set these fields.
-	AllCliqueProtocolChanges = &ChainConfig{big.NewInt(1337), big.NewInt(0), big.NewInt(0), nil, false, big.NewInt(0), common.Hash{}, big.NewInt(0), big.NewInt(0), big.NewInt(0), nil, &CliqueConfig{Period: 0, Epoch: 30000}}
+  // AllCliqueProtocolChanges contains every protocol change (EIPs) introduced
+  // and accepted by the Ethereum core developers into the Clique consensus.
+  //
+  // This configuration is intentionally not using keyed fields to force anyone
+  // adding flags to the config to also have to set these fields.
+  AllCliqueProtocolChanges = &ChainConfig{big.NewInt(1337), big.NewInt(0), big.NewInt(0), nil, false, big.NewInt(0), common.Hash{}, big.NewInt(0), big.NewInt(0), big.NewInt(0), nil, &CliqueConfig{Period: 0, Epoch: 30000}}
 
-	TestChainConfig = &ChainConfig{big.NewInt(1337), big.NewInt(0), big.NewInt(0), nil, false, big.NewInt(0), common.Hash{}, big.NewInt(0), big.NewInt(0), big.NewInt(0), new(EthashConfig), nil}
-	TestRules          = TestChainConfig.Rules(new(big.Int))
+  TestChainConfig = &ChainConfig{big.NewInt(1337), big.NewInt(0), big.NewInt(0), nil, false, big.NewInt(0), common.Hash{}, big.NewInt(0), big.NewInt(0), big.NewInt(0), new(EthashConfig), nil}
+  TestRules          = TestChainConfig.Rules(new(big.Int))
 )
 
 // ChainConfig is the core config which determines the blockchain settings.
@@ -107,26 +107,26 @@ var (
 // that any network, identified by its genesis block, can have its own
 // set of configuration options.
 type ChainConfig struct {
-	ChainId *big.Int `json:"chainId"` // Chain id identifies the current chain and is used for replay protection
+  ChainId *big.Int `json:"chainId"` // Chain id identifies the current chain and is used for replay protection
 
-	HomesteadBlock *big.Int `json:"homesteadBlock,omitempty"` // Homestead switch block (nil = no fork, 0 = already homestead)
-	UBIForkBlock	*big.Int  `json:"ubiForkBlock"`		// UBI hard-fork switch block, can't be nil
+  HomesteadBlock *big.Int `json:"homesteadBlock,omitempty"` // Homestead switch block (nil = no fork, 0 = already homestead)
+  UBIForkBlock  *big.Int  `json:"ubiForkBlock"`   // UBI hard-fork switch block, can't be nil
 
-	DAOForkBlock   *big.Int `json:"daoForkBlock,omitempty"`   // TheDAO hard-fork switch block (nil = no fork)
-	DAOForkSupport bool     `json:"daoForkSupport,omitempty"` // Whether the nodes supports or opposes the DAO hard-fork
+  DAOForkBlock   *big.Int `json:"daoForkBlock,omitempty"`   // TheDAO hard-fork switch block (nil = no fork)
+  DAOForkSupport bool     `json:"daoForkSupport,omitempty"` // Whether the nodes supports or opposes the DAO hard-fork
 
-	// EIP150 implements the Gas price changes (https://github.com/ethereum/EIPs/issues/150)
-	EIP150Block *big.Int    `json:"eip150Block,omitempty"` // EIP150 HF block (nil = no fork)
-	EIP150Hash  common.Hash `json:"eip150Hash,omitempty"`  // EIP150 HF hash (needed for header only clients as only gas pricing changed)
+  // EIP150 implements the Gas price changes (https://github.com/ethereum/EIPs/issues/150)
+  EIP150Block *big.Int    `json:"eip150Block,omitempty"` // EIP150 HF block (nil = no fork)
+  EIP150Hash  common.Hash `json:"eip150Hash,omitempty"`  // EIP150 HF hash (needed for header only clients as only gas pricing changed)
 
-	EIP155Block *big.Int `json:"eip155Block,omitempty"` // EIP155 HF block
-	EIP158Block *big.Int `json:"eip158Block,omitempty"` // EIP158 HF block
+  EIP155Block *big.Int `json:"eip155Block,omitempty"` // EIP155 HF block
+  EIP158Block *big.Int `json:"eip158Block,omitempty"` // EIP158 HF block
 
-	ByzantiumBlock *big.Int `json:"byzantiumBlock,omitempty"` // Byzantium switch block (nil = no fork, 0 = already on byzantium)
+  ByzantiumBlock *big.Int `json:"byzantiumBlock,omitempty"` // Byzantium switch block (nil = no fork, 0 = already on byzantium)
 
-	// Various consensus engines
-	Ethash *EthashConfig `json:"ethash,omitempty"`
-	Clique *CliqueConfig `json:"clique,omitempty"`
+  // Various consensus engines
+  Ethash *EthashConfig `json:"ethash,omitempty"`
+  Clique *CliqueConfig `json:"clique,omitempty"`
 }
 
 // EthashConfig is the consensus engine configs for proof-of-work based sealing.
@@ -134,195 +134,195 @@ type EthashConfig struct{}
 
 // String implements the stringer interface, returning the consensus engine details.
 func (c *EthashConfig) String() string {
-	return "ethash"
+  return "ethash"
 }
 
 // CliqueConfig is the consensus engine configs for proof-of-authority based sealing.
 type CliqueConfig struct {
-	Period uint64 `json:"period"` // Number of seconds between blocks to enforce
-	Epoch  uint64 `json:"epoch"`  // Epoch length to reset votes and checkpoint
+  Period uint64 `json:"period"` // Number of seconds between blocks to enforce
+  Epoch  uint64 `json:"epoch"`  // Epoch length to reset votes and checkpoint
 }
 
 // String implements the stringer interface, returning the consensus engine details.
 func (c *CliqueConfig) String() string {
-	return "clique"
+  return "clique"
 }
 
 // String implements the fmt.Stringer interface.
 func (c *ChainConfig) String() string {
-	var engine interface{}
-	switch {
-	case c.Ethash != nil:
-		engine = c.Ethash
-	case c.Clique != nil:
-		engine = c.Clique
-	default:
-		engine = "unknown"
-	}
-	return fmt.Sprintf("{ChainID: %v Homestead: %v MCIP-3 UBI: %v DAO: %v DAOSupport: %v EIP150: %v EIP155: %v EIP158: %v Byzantium: %v Engine: %v}",
-		c.ChainId,
-		c.HomesteadBlock,
-		c.UBIForkBlock,
-		c.DAOForkBlock,
-		c.DAOForkSupport,
-		c.EIP150Block,
-		c.EIP155Block,
-		c.EIP158Block,
-		c.ByzantiumBlock,
-		engine,
-	)
+  var engine interface{}
+  switch {
+  case c.Ethash != nil:
+    engine = c.Ethash
+  case c.Clique != nil:
+    engine = c.Clique
+  default:
+    engine = "unknown"
+  }
+  return fmt.Sprintf("{ChainID: %v Homestead: %v MCIP-3 UBI: %v DAO: %v DAOSupport: %v EIP150: %v EIP155: %v EIP158: %v Byzantium: %v Engine: %v}",
+    c.ChainId,
+    c.HomesteadBlock,
+    c.UBIForkBlock,
+    c.DAOForkBlock,
+    c.DAOForkSupport,
+    c.EIP150Block,
+    c.EIP155Block,
+    c.EIP158Block,
+    c.ByzantiumBlock,
+    engine,
+  )
 }
 
 // IsHomestead returns whether num is either equal to the homestead block or greater.
 func (c *ChainConfig) IsHomestead(num *big.Int) bool {
-	return isForked(c.HomesteadBlock, num)
+  return isForked(c.HomesteadBlock, num)
 }
 
 // IsUBIFork returns whether num is either equal to the MCIP-3 block or greater.
 func (c *ChainConfig) IsUBIFork(num *big.Int) bool {
-	return isForked(c.UBIForkBlock, num)
+  return isForked(c.UBIForkBlock, num)
 }
 
 // IsDAOFork returns whether num is either equal to the DAO fork block or greater.
 func (c *ChainConfig) IsDAOFork(num *big.Int) bool {
-	return isForked(c.DAOForkBlock, num)
+  return isForked(c.DAOForkBlock, num)
 }
 
 func (c *ChainConfig) IsEIP150(num *big.Int) bool {
-	return isForked(c.EIP150Block, num)
+  return isForked(c.EIP150Block, num)
 }
 
 func (c *ChainConfig) IsEIP155(num *big.Int) bool {
-	return isForked(c.EIP155Block, num)
+  return isForked(c.EIP155Block, num)
 }
 
 func (c *ChainConfig) IsEIP158(num *big.Int) bool {
-	return isForked(c.EIP158Block, num)
+  return isForked(c.EIP158Block, num)
 }
 
 func (c *ChainConfig) IsByzantium(num *big.Int) bool {
-	return isForked(c.ByzantiumBlock, num)
+  return isForked(c.ByzantiumBlock, num)
 }
 
 // GasTable returns the gas table corresponding to the current phase (homestead or homestead reprice).
 //
 // The returned GasTable's fields shouldn't, under any circumstances, be changed.
 func (c *ChainConfig) GasTable(num *big.Int) GasTable {
-	if num == nil {
-		return GasTableHomestead
-	}
-	switch {
-	case c.IsEIP158(num):
-		return GasTableEIP158
-	case c.IsEIP150(num):
-		return GasTableEIP150
-	default:
-		return GasTableHomestead
-	}
+  if num == nil {
+    return GasTableHomestead
+  }
+  switch {
+  case c.IsEIP158(num):
+    return GasTableEIP158
+  case c.IsEIP150(num):
+    return GasTableEIP150
+  default:
+    return GasTableHomestead
+  }
 }
 
 // CheckCompatible checks whether scheduled fork transitions have been imported
 // with a mismatching chain configuration.
 func (c *ChainConfig) CheckCompatible(newcfg *ChainConfig, height uint64) *ConfigCompatError {
-	bhead := new(big.Int).SetUint64(height)
+  bhead := new(big.Int).SetUint64(height)
 
-	// Iterate checkCompatible to find the lowest conflict.
-	var lasterr *ConfigCompatError
-	for {
-		err := c.checkCompatible(newcfg, bhead)
-		if err == nil || (lasterr != nil && err.RewindTo == lasterr.RewindTo) {
-			break
-		}
-		lasterr = err
-		bhead.SetUint64(err.RewindTo)
-	}
-	return lasterr
+  // Iterate checkCompatible to find the lowest conflict.
+  var lasterr *ConfigCompatError
+  for {
+    err := c.checkCompatible(newcfg, bhead)
+    if err == nil || (lasterr != nil && err.RewindTo == lasterr.RewindTo) {
+      break
+    }
+    lasterr = err
+    bhead.SetUint64(err.RewindTo)
+  }
+  return lasterr
 }
 
 func (c *ChainConfig) checkCompatible(newcfg *ChainConfig, head *big.Int) *ConfigCompatError {
-	if isForkIncompatible(c.HomesteadBlock, newcfg.HomesteadBlock, head) {
-		return newCompatError("Homestead fork block", c.HomesteadBlock, newcfg.HomesteadBlock)
-	}
-	if isForkIncompatible(c.UBIForkBlock, newcfg.UBIForkBlock, head) {
-		return newCompatError("MCIP-3 UBI fork block", c.UBIForkBlock, newcfg.UBIForkBlock)
-	}
-	if isForkIncompatible(c.DAOForkBlock, newcfg.DAOForkBlock, head) {
-		return newCompatError("DAO fork block", c.DAOForkBlock, newcfg.DAOForkBlock)
-	}
-	if c.IsDAOFork(head) && c.DAOForkSupport != newcfg.DAOForkSupport {
-		return newCompatError("DAO fork support flag", c.DAOForkBlock, newcfg.DAOForkBlock)
-	}
-	if isForkIncompatible(c.EIP150Block, newcfg.EIP150Block, head) {
-		return newCompatError("EIP150 fork block", c.EIP150Block, newcfg.EIP150Block)
-	}
-	if isForkIncompatible(c.EIP155Block, newcfg.EIP155Block, head) {
-		return newCompatError("EIP155 fork block", c.EIP155Block, newcfg.EIP155Block)
-	}
-	if isForkIncompatible(c.EIP158Block, newcfg.EIP158Block, head) {
-		return newCompatError("EIP158 fork block", c.EIP158Block, newcfg.EIP158Block)
-	}
-	if c.IsEIP158(head) && !configNumEqual(c.ChainId, newcfg.ChainId) {
-		return newCompatError("EIP158 chain ID", c.EIP158Block, newcfg.EIP158Block)
-	}
-	if isForkIncompatible(c.ByzantiumBlock, newcfg.ByzantiumBlock, head) {
-		return newCompatError("Byzantium fork block", c.ByzantiumBlock, newcfg.ByzantiumBlock)
-	}
-	return nil
+  if isForkIncompatible(c.HomesteadBlock, newcfg.HomesteadBlock, head) {
+    return newCompatError("Homestead fork block", c.HomesteadBlock, newcfg.HomesteadBlock)
+  }
+  if isForkIncompatible(c.UBIForkBlock, newcfg.UBIForkBlock, head) {
+    return newCompatError("MCIP-3 UBI fork block", c.UBIForkBlock, newcfg.UBIForkBlock)
+  }
+  if isForkIncompatible(c.DAOForkBlock, newcfg.DAOForkBlock, head) {
+    return newCompatError("DAO fork block", c.DAOForkBlock, newcfg.DAOForkBlock)
+  }
+  if c.IsDAOFork(head) && c.DAOForkSupport != newcfg.DAOForkSupport {
+    return newCompatError("DAO fork support flag", c.DAOForkBlock, newcfg.DAOForkBlock)
+  }
+  if isForkIncompatible(c.EIP150Block, newcfg.EIP150Block, head) {
+    return newCompatError("EIP150 fork block", c.EIP150Block, newcfg.EIP150Block)
+  }
+  if isForkIncompatible(c.EIP155Block, newcfg.EIP155Block, head) {
+    return newCompatError("EIP155 fork block", c.EIP155Block, newcfg.EIP155Block)
+  }
+  if isForkIncompatible(c.EIP158Block, newcfg.EIP158Block, head) {
+    return newCompatError("EIP158 fork block", c.EIP158Block, newcfg.EIP158Block)
+  }
+  if c.IsEIP158(head) && !configNumEqual(c.ChainId, newcfg.ChainId) {
+    return newCompatError("EIP158 chain ID", c.EIP158Block, newcfg.EIP158Block)
+  }
+  if isForkIncompatible(c.ByzantiumBlock, newcfg.ByzantiumBlock, head) {
+    return newCompatError("Byzantium fork block", c.ByzantiumBlock, newcfg.ByzantiumBlock)
+  }
+  return nil
 }
 
 // isForkIncompatible returns true if a fork scheduled at s1 cannot be rescheduled to
 // block s2 because head is already past the fork.
 func isForkIncompatible(s1, s2, head *big.Int) bool {
-	return (isForked(s1, head) || isForked(s2, head)) && !configNumEqual(s1, s2)
+  return (isForked(s1, head) || isForked(s2, head)) && !configNumEqual(s1, s2)
 }
 
 // isForked returns whether a fork scheduled at block s is active at the given head block.
 func isForked(s, head *big.Int) bool {
-	if s == nil || head == nil {
-		return false
-	}
-	return s.Cmp(head) <= 0
+  if s == nil || head == nil {
+    return false
+  }
+  return s.Cmp(head) <= 0
 }
 
 func configNumEqual(x, y *big.Int) bool {
-	if x == nil {
-		return y == nil
-	}
-	if y == nil {
-		return x == nil
-	}
-	return x.Cmp(y) == 0
+  if x == nil {
+    return y == nil
+  }
+  if y == nil {
+    return x == nil
+  }
+  return x.Cmp(y) == 0
 }
 
 // ConfigCompatError is raised if the locally-stored blockchain is initialised with a
 // ChainConfig that would alter the past.
 type ConfigCompatError struct {
-	What string
-	// block numbers of the stored and new configurations
-	StoredConfig, NewConfig *big.Int
-	// the block number to which the local chain must be rewound to correct the error
-	RewindTo uint64
+  What string
+  // block numbers of the stored and new configurations
+  StoredConfig, NewConfig *big.Int
+  // the block number to which the local chain must be rewound to correct the error
+  RewindTo uint64
 }
 
 func newCompatError(what string, storedblock, newblock *big.Int) *ConfigCompatError {
-	var rew *big.Int
-	switch {
-	case storedblock == nil:
-		rew = newblock
-	case newblock == nil || storedblock.Cmp(newblock) < 0:
-		rew = storedblock
-	default:
-		rew = newblock
-	}
-	err := &ConfigCompatError{what, storedblock, newblock, 0}
-	if rew != nil && rew.Sign() > 0 {
-		err.RewindTo = rew.Uint64() - 1
-	}
-	return err
+  var rew *big.Int
+  switch {
+  case storedblock == nil:
+    rew = newblock
+  case newblock == nil || storedblock.Cmp(newblock) < 0:
+    rew = storedblock
+  default:
+    rew = newblock
+  }
+  err := &ConfigCompatError{what, storedblock, newblock, 0}
+  if rew != nil && rew.Sign() > 0 {
+    err.RewindTo = rew.Uint64() - 1
+  }
+  return err
 }
 
 func (err *ConfigCompatError) Error() string {
-	return fmt.Sprintf("mismatching %s in database (have %d, want %d, rewindto %d)", err.What, err.StoredConfig, err.NewConfig, err.RewindTo)
+  return fmt.Sprintf("mismatching %s in database (have %d, want %d, rewindto %d)", err.What, err.StoredConfig, err.NewConfig, err.RewindTo)
 }
 
 // Rules wraps ChainConfig and is merely syntatic sugar or can be used for functions
@@ -331,15 +331,15 @@ func (err *ConfigCompatError) Error() string {
 // Rules is a one time interface meaning that it shouldn't be used in between transition
 // phases.
 type Rules struct {
-	ChainId                                   *big.Int
-	IsHomestead, IsEIP150, IsEIP155, IsEIP158 bool
-	IsByzantium                               bool
+  ChainId                                   *big.Int
+  IsHomestead, IsEIP150, IsEIP155, IsEIP158 bool
+  IsByzantium                               bool
 }
 
 func (c *ChainConfig) Rules(num *big.Int) Rules {
-	chainId := c.ChainId
-	if chainId == nil {
-		chainId = new(big.Int)
-	}
-	return Rules{ChainId: new(big.Int).Set(chainId), IsHomestead: c.IsHomestead(num), IsEIP150: c.IsEIP150(num), IsEIP155: c.IsEIP155(num), IsEIP158: c.IsEIP158(num), IsByzantium: c.IsByzantium(num)}
+  chainId := c.ChainId
+  if chainId == nil {
+    chainId = new(big.Int)
+  }
+  return Rules{ChainId: new(big.Int).Set(chainId), IsHomestead: c.IsHomestead(num), IsEIP150: c.IsEIP150(num), IsEIP155: c.IsEIP155(num), IsEIP158: c.IsEIP158(num), IsByzantium: c.IsByzantium(num)}
 }
