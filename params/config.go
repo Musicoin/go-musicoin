@@ -1,7 +1,7 @@
 // Copyright 2016 The Go-Ethereum Authors
 // This file is part of the Go-Ethereum library.
 //
-// Copyright 2017 The Go-Musicoin Authors
+// Copyright 2017-2018 The Go-Musicoin Authors
 // This file is part of the Go-Musicoin library.
 //
 // The go-ethereum library is free software: you can redistribute it and/or modify
@@ -32,50 +32,50 @@ var (
 )
 
 var (
-	// MainnetChainConfig is the chain parameters to run a node on the main network.
+	// MainnetChainConfig is the chain parameters to run a node on the main Musicoin network.
 	MainnetChainConfig = &ChainConfig{
 		ChainId:        big.NewInt(7762959),
 		HomesteadBlock: big.NewInt(1150000),
 		UBIForkBlock:   big.NewInt(1200001),
-		DAOForkBlock:   big.NewInt(36028797018963967),
+		DAOForkBlock:   nil,
 		DAOForkSupport: false,
-		EIP150Block:    big.NewInt(36028797018963967),
+		EIP150Block:    big.NewInt(2000000),
 		EIP150Hash:     common.HexToHash("0x"),
-		EIP155Block:    big.NewInt(36028797018963967),
-		EIP158Block:    big.NewInt(36028797018963967),
-		ByzantiumBlock: big.NewInt(36028797018963967),
+		EIP155Block:    big.NewInt(2000000),
+		EIP158Block:    big.NewInt(2000000),
+		ByzantiumBlock: big.NewInt(2000000),
 
 		Ethash: new(EthashConfig),
 	}
 
-	// TestnetChainConfig contains the chain parameters to run a node on the Ropsten test network.
+	// TestnetChainConfig contains the chain parameters to run a node on the PoW test network.
 	TestnetChainConfig = &ChainConfig{
 		ChainId:        big.NewInt(7762955),
-		HomesteadBlock: big.NewInt(0),
-		UBIForkBlock:   big.NewInt(0),
-		DAOForkBlock:   big.NewInt(36028797018963967),
+		HomesteadBlock: big.NewInt(23),
+		UBIForkBlock:   big.NewInt(23),
+		DAOForkBlock:   nil,
 		DAOForkSupport: false,
-		EIP150Block:    big.NewInt(0),
-		EIP150Hash:     common.HexToHash("0x41941023680923e0fe4d74a34bdac8141f2540e3ae90623718e47d66d1ca4a2d"),
-		EIP155Block:    big.NewInt(10),
-		EIP158Block:    big.NewInt(10),
-		ByzantiumBlock: big.NewInt(1700000),
+		EIP150Block:    big.NewInt(42),
+		EIP150Hash:     common.HexToHash("0x"),
+		EIP155Block:    big.NewInt(42),
+		EIP158Block:    big.NewInt(42),
+		ByzantiumBlock: big.NewInt(42),
 
 		Ethash: new(EthashConfig),
 	}
 
-	// RinkebyChainConfig contains the chain parameters to run a node on the Rinkeby test network.
+	// RinkebyChainConfig contains the chain parameters to run a node on the PoA test network.
 	RinkebyChainConfig = &ChainConfig{
-		ChainId:        big.NewInt(4),
-		HomesteadBlock: big.NewInt(1),
-		UBIForkBlock:   big.NewInt(0),
+		ChainId:        big.NewInt(7762954),
+		HomesteadBlock: big.NewInt(23),
+		UBIForkBlock:   big.NewInt(23),
 		DAOForkBlock:   nil,
-		DAOForkSupport: true,
-		EIP150Block:    big.NewInt(2),
-		EIP150Hash:     common.HexToHash("0x9b095b36c15eaf13044373aef8ee0bd3a382a5abb92e402afa44b8249c3a90e9"),
-		EIP155Block:    big.NewInt(3),
-		EIP158Block:    big.NewInt(3),
-		ByzantiumBlock: big.NewInt(1035301),
+		DAOForkSupport: false,
+		EIP150Block:    big.NewInt(42),
+		EIP150Hash:     common.HexToHash("0x"),
+		EIP155Block:    big.NewInt(42),
+		EIP158Block:    big.NewInt(42),
+		ByzantiumBlock: big.NewInt(42),
 
 		Clique: &CliqueConfig{
 			Period: 15,
@@ -159,7 +159,7 @@ func (c *ChainConfig) String() string {
 	default:
 		engine = "unknown"
 	}
-	return fmt.Sprintf("{ChainID: %v Homestead: %v MCIP3-UBI: %v DAO: %v DAOSupport: %v EIP150: %v EIP155: %v EIP158: %v Byzantium: %v Engine: %v}",
+	return fmt.Sprintf("{ChainID: %v Homestead: %v MCIP-3 UBI: %v DAO: %v DAOSupport: %v EIP150: %v EIP155: %v EIP158: %v Byzantium: %v Engine: %v}",
 		c.ChainId,
 		c.HomesteadBlock,
 		c.UBIForkBlock,
@@ -178,7 +178,7 @@ func (c *ChainConfig) IsHomestead(num *big.Int) bool {
 	return isForked(c.HomesteadBlock, num)
 }
 
-// IsUBIFork returns whether num is either equal to the MCIP3-UBI block or greater.
+// IsUBIFork returns whether num is either equal to the MCIP-3 block or greater.
 func (c *ChainConfig) IsUBIFork(num *big.Int) bool {
 	return isForked(c.UBIForkBlock, num)
 }
@@ -244,7 +244,7 @@ func (c *ChainConfig) checkCompatible(newcfg *ChainConfig, head *big.Int) *Confi
 		return newCompatError("Homestead fork block", c.HomesteadBlock, newcfg.HomesteadBlock)
 	}
 	if isForkIncompatible(c.UBIForkBlock, newcfg.UBIForkBlock, head) {
-		return newCompatError("MCIP3-UBI fork block", c.UBIForkBlock, newcfg.UBIForkBlock)
+		return newCompatError("MCIP-3 UBI fork block", c.UBIForkBlock, newcfg.UBIForkBlock)
 	}
 	if isForkIncompatible(c.DAOForkBlock, newcfg.DAOForkBlock, head) {
 		return newCompatError("DAO fork block", c.DAOForkBlock, newcfg.DAOForkBlock)
