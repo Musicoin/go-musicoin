@@ -45,6 +45,7 @@ var (
 	DevBlockReward       *big.Int = new(big.Int).Mul(big.NewInt(14), big.NewInt(1e+18))
 	ByzantiumBlockReward *big.Int = new(big.Int).Mul(big.NewInt(0), big.NewInt(1e+18))
 	maxUncles                     = 2                 // Maximum number of uncles allowed in a single block
+	allowedFutureBlockTime          = 15 * time.Second  // Max time from current time allowed for blocks, before they're considered future blocks
 )
 
 // Various error messages to mark blocks invalid. These should be private to
@@ -237,7 +238,7 @@ func (ethash *Ethash) verifyHeader(chain consensus.ChainReader, header, parent *
 			return errLargeBlockTime
 		}
 	} else {
-		if header.Time.Cmp(big.NewInt(time.Now().Unix())) > 0 {
+		if header.Time.Cmp(big.NewInt(time.Now().Add(allowedFutureBlockTime).Unix())) > 0 {
 			return consensus.ErrFutureBlock
 		}
 	}

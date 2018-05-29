@@ -1,0 +1,28 @@
+From 1d7d7f57d0fefa8797fbb269f1de76bca3e73dc3 Mon Sep 17 00:00:00 2001
+From: Sorin Neacsu <sorin.neacsu@gmail.com>
+Date: Fri, 15 Dec 2017 13:31:10 -0800
+Subject: [PATCH] cmd/geth: add support for geth --rinkeby attach
+
+---
+ cmd/geth/consolecmd.go | 8 ++++++--
+ 1 file changed, 6 insertions(+), 2 deletions(-)
+
+diff --git a/cmd/geth/consolecmd.go b/cmd/geth/consolecmd.go
+index 2c6b166875..9d5cc38a1b 100644
+--- a/cmd/geth/consolecmd.go
++++ b/cmd/geth/consolecmd.go
+@@ -120,8 +120,12 @@ func remoteConsole(ctx *cli.Context) error {
+ 		if ctx.GlobalIsSet(utils.DataDirFlag.Name) {
+ 			path = ctx.GlobalString(utils.DataDirFlag.Name)
+ 		}
+-		if path != "" && ctx.GlobalBool(utils.TestnetFlag.Name) {
+-			path = filepath.Join(path, "testnet")
++		if path != "" {
++			if ctx.GlobalBool(utils.TestnetFlag.Name) {
++				path = filepath.Join(path, "testnet")
++			} else if ctx.GlobalBool(utils.RinkebyFlag.Name) {
++				path = filepath.Join(path, "rinkeby")
++			}
+ 		}
+ 		endpoint = fmt.Sprintf("%s/geth.ipc", path)
+ 	}

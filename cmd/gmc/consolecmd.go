@@ -17,8 +17,10 @@
 package main
 
 import (
+	"fmt"
 	"os"
 	"os/signal"
+	"path/filepath"
 	"strings"
 
 	"github.com/ethereum/go-ethereum/cmd/utils"
@@ -111,6 +113,18 @@ func localConsole(ctx *cli.Context) error {
 // remoteConsole will connect to a remote gmc instance, attaching a JavaScript
 // console to it.
 func remoteConsole(ctx *cli.Context) error {
+	endpoint := ctx.Args().First()
+	if endpoint == "" {
+		path := node.DefaultDataDir()
+		if ctx.GlobalIsSet(utils.DataDirFlag.Name) {
+			path = ctx.GlobalString(utils.DataDirFlag.Name)
+		}
+		if path != "" && ctx.GlobalBool(utils.TestnetFlag.Name) {
+			path = filepath.Join(path, "testnet")
+		}
+		endpoint = fmt.Sprintf("%s/gmc.ipc", path)
+ 	}
+ 	client, err := dialRPC(endpoint)
 	// Attach to a remotely running gmc instance and start the JavaScript console
 	client, err := dialRPC(ctx.Args().First())
 	if err != nil {

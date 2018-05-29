@@ -1,0 +1,55 @@
+From 5620c66147c9f24e08dafa823704a78453134dc4 Mon Sep 17 00:00:00 2001
+From: isaac <isaac.mao@gmail.com>
+Date: Mon, 19 Mar 2018 17:29:27 +0800
+Subject: [PATCH] hardfork for hardfork
+
+---
+ VERSION           | 2 +-
+ params/config.go  | 8 ++++----
+ params/version.go | 6 +++---
+ 3 files changed, 8 insertions(+), 8 deletions(-)
+
+diff --git a/VERSION b/VERSION
+index 7ec1d6db4..6a6a3d8e3 100644
+--- a/VERSION
++++ b/VERSION
+@@ -1 +1 @@
+-2.1.0
++2.6.1
+diff --git a/params/config.go b/params/config.go
+index df7bb8e92..ed3cc3541 100644
+--- a/params/config.go
++++ b/params/config.go
+@@ -36,11 +36,11 @@ var (
+ 		UBIForkBlock:   big.NewInt(1200001),
+ 		DAOForkBlock:   nil,
+ 		DAOForkSupport: false,
+-		EIP150Block:    big.NewInt(1987654),
++		EIP150Block:    big.NewInt(2222222),
+ 		EIP150Hash:     common.HexToHash("0x"),
+-		EIP155Block:    big.NewInt(1987654),
+-		EIP158Block:    big.NewInt(1987654),
+-		ByzantiumBlock: big.NewInt(1987654),
++		EIP155Block:    big.NewInt(2222222),
++		EIP158Block:    big.NewInt(2222222),
++		ByzantiumBlock: big.NewInt(2222222),
+ 
+ 		Ethash: new(EthashConfig),
+ 	}
+diff --git a/params/version.go b/params/version.go
+index f675b1042..ff1f1269d 100644
+--- a/params/version.go
++++ b/params/version.go
+@@ -22,9 +22,9 @@ import (
+ 
+ const (
+ 	VersionMajor = 2          // Major version component of the current release
+-	VersionMinor = 1          // Minor version component of the current release
+-	VersionPatch = 0          // Patch version component of the current release
+-	VersionMeta  = "unstable" // Version metadata to append to the version string
++	VersionMinor = 6          // Minor version component of the current release
++	VersionPatch = 1          // Patch version component of the current release
++	VersionMeta  = "beta" // Version metadata to append to the version string
+ )
+ 
+ // Version holds the textual version string.
