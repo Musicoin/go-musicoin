@@ -312,14 +312,6 @@ func (bc *BlockChain) GasLimit() *big.Int {
 	return bc.currentBlock.GasLimit()
 }
 
-// LastBlockHash return the hash of the HEAD block.
-func (bc *BlockChain) LastBlockHash() common.Hash {
-	bc.mu.RLock()
-	defer bc.mu.RUnlock()
-
-	return bc.currentBlock.Hash()
-}
-
 // CurrentBlock retrieves the current head block of the canonical chain. The
 // block is retrieved from the blockchain's internal cache.
 func (bc *BlockChain) CurrentBlock() *types.Block {
@@ -336,15 +328,6 @@ func (bc *BlockChain) CurrentFastBlock() *types.Block {
 	defer bc.mu.RUnlock()
 
 	return bc.currentFastBlock
-}
-
-// Status returns status information about the current chain such as the HEAD Td,
-// the HEAD hash and the hash of the genesis block.
-func (bc *BlockChain) Status() (td *big.Int, currentBlock common.Hash, genesisBlock common.Hash) {
-	bc.mu.RLock()
-	defer bc.mu.RUnlock()
-
-	return bc.GetTd(bc.currentBlock.Hash(), bc.currentBlock.NumberU64()), bc.currentBlock.Hash(), bc.genesisBlock.Hash()
 }
 
 // SetProcessor sets the processor required for making state modifications.
@@ -465,7 +448,7 @@ func (bc *BlockChain) insert(block *types.Block) {
 	}
 	bc.currentBlock = block
 
-	// If the block is better than out head or is on a different chain, force update heads
+	// If the block is better than our head or is on a different chain, force update heads
 	if updateHeads {
 		bc.hc.SetCurrentHeader(block.Header())
 
@@ -749,7 +732,7 @@ func (bc *BlockChain) InsertReceiptChain(blockChain types.Blocks, receiptChain [
 				return 0, err
 			}
 			bytes += batch.ValueSize()
-			batch = bc.chainDb.NewBatch()
+			batch.Reset()
 		}
 	}
 	if batch.ValueSize() > 0 {
@@ -1006,7 +989,7 @@ func (bc *BlockChain) insertChain(chain types.Blocks) (int, []interface{}, []*ty
 		stats.report(chain, i)
 	}
 	// Append a single chain head event if we've progressed the chain
-	if lastCanon != nil && bc.LastBlockHash() == lastCanon.Hash() {
+	if lastCanon != nil && bc.CurrentBlock().Hash() == lastCanon.Hash() {
 		events = append(events, ChainHeadEvent{lastCanon})
 	}
 	return 0, events, coalescedLogs, nil
@@ -1140,18 +1123,17 @@ func (bc *BlockChain) reorg(oldBlock, newBlock *types.Block) error {
 	} else {
 		log.Error("Impossible reorg, please file an issue", "oldnum", oldBlock.Number(), "oldhash", oldBlock.Hash(), "newnum", newBlock.Number(), "newhash", newBlock.Hash())
 	}
+	// Insert the new chain, taking care of the proper incremental order
 	var addedTxs types.Transactions
-	// insert blocks. Order does not matter. Last block will be written in ImportChain itself which creates the new head properly
-	for _, block := range newChain {
+	for i := len(newChain) - 1; i >= 0; i-- {
 		// insert the block in the canonical way, re-writing history
-		bc.insert(block)
+		bc.insert(newChain[i])
 		// write lookup entries for hash based transaction/receipt searches
-		if err := WriteTxLookupEntries(bc.chainDb, block); err != nil {
+		if err := WriteTxLookupEntries(bc.chainDb, newChain[i]); err != nil {
 			return err
 		}
-		addedTxs = append(addedTxs, block.Transactions()...)
+		addedTxs = append(addedTxs, newChain[i].Transactions()...)
 	}
-
 	// calculate the difference between deleted and added transactions
 	diff := types.TxDifference(deletedTxs, addedTxs)
 	// When transactions get deleted from the database that means the
@@ -1196,10 +1178,11 @@ func (bc *BlockChain) PostChainEvents(events []interface{}, logs []*types.Log) {
 }
 
 func (bc *BlockChain) update() {
-	futureTimer := time.Tick(5 * time.Second)
+	futureTimer := time.NewTicker(5 * time.Second)
+	defer futureTimer.Stop()
 	for {
 		select {
-		case <-futureTimer:
+		case <-futureTimer.C:
 			bc.procFutureBlocks()
 		case <-bc.quit:
 			return

@@ -286,10 +286,10 @@
 			"revisionTime": "2016-11-28T21:05:44Z"
 		},
 		{
-			"checksumSHA1": "yOMpVYuaPAtsMIo9DvQP8WZqxQs=",
+			"checksumSHA1": "1ESHllhZOIBg7MnlGHUdhz047bI=",
 			"path": "github.com/rjeczalik/notify",
-			"revision": "9d5aa0c3b735c3340018a4627446c3ea5a04a097",
-			"revisionTime": "2017-01-28T20:05:44Z"
+			"revision": "27b537f07230b3f917421af6dcf044038dbe57e2",
+			"revisionTime": "2018-01-03T13:19:05Z"
 		},
 		{
 			"checksumSHA1": "5uqO4ITTDMklKi3uNaE/D9LQ5nM=",
@@ -358,10 +358,10 @@
 			"revisionTime": "2017-07-05T02:17:15Z"
 		},
 		{
-			"checksumSHA1": "yHbyLpI/Meh0DGrmi8x6FrDxxUY=",
+			"checksumSHA1": "rpu5ZHjXlV13UKA7L1d5MTOyQwA=",
 			"path": "github.com/syndtr/goleveldb/leveldb",
-			"revision": "b89cc31ef7977104127d34c1bd31ebd1a9db2199",
-			"revisionTime": "2017-07-25T06:48:36Z"
+			"revision": "211f780988068502fe874c44dae530528ebd840f",
+			"revisionTime": "2018-01-28T14:04:16Z"
 		},
 		{
 			"checksumSHA1": "EKIow7XkgNdWvR/982ffIZxKG8Y=",
