@@ -35,25 +35,30 @@ import (
 )
 
 const (
-	EnvelopeVersion    = uint64(0)
-	ProtocolVersion    = uint64(5)
-	ProtocolVersionStr = "5.0"
+	ProtocolVersion    = uint64(6)
+	ProtocolVersionStr = "6.0"
 	ProtocolName       = "shh"
 
-	statusCode           = 0 // used by whisper protocol
-	messagesCode         = 1 // normal whisper message
-	p2pCode              = 2 // peer-to-peer message (to be consumed by the peer, but not forwarded any further)
-	p2pRequestCode       = 3 // peer-to-peer message, used by Dapp protocol
-	NumberOfMessageCodes = 64
+	// whisper protocol message codes, according to EIP-627
+	statusCode           = 0   // used by whisper protocol
+	messagesCode         = 1   // normal whisper message
+	powRequirementCode   = 2   // PoW requirement
+	bloomFilterExCode    = 3   // bloom filter exchange
+	p2pRequestCode       = 126 // peer-to-peer message, used by Dapp protocol
+	p2pMessageCode       = 127 // peer-to-peer message (to be consumed by the peer, but not forwarded any further)
+	NumberOfMessageCodes = 128
 
 	paddingMask   = byte(3)
 	signatureFlag = byte(4)
 
-	TopicLength     = 4
-	signatureLength = 65
-	aesKeyLength    = 32
-	AESNonceLength  = 12
-	keyIdSize       = 32
+	TopicLength     = 4  // in bytes
+	signatureLength = 65 // in bytes
+	aesKeyLength    = 32 // in bytes
+	AESNonceLength  = 12 // in bytes
+	keyIdSize       = 32 // in bytes
+	bloomFilterSize = 64 // in bytes
+
+	EnvelopeHeaderLength = 20
 
 	MaxMessageSize        = uint32(10 * 1024 * 1024) // maximum accepted size of a message.
 	DefaultMaxMessageSize = uint32(1024 * 1024)
@@ -65,8 +70,8 @@ const (
 	expirationCycle   = time.Second
 	transmissionCycle = 300 * time.Millisecond
 
-	DefaultTTL     = 50 // seconds
-	SynchAllowance = 10 // seconds
+	DefaultTTL           = 50 // seconds
+	DefaultSyncAllowance = 10 // seconds
 )
 
 type unknownVersionError uint64

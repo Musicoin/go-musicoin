@@ -229,6 +229,36 @@ func TestInstallIdenticalFilters(t *testing.T) {
 	}
 }
 
+func TestInstallFilterWithSymAndAsymKeys(t *testing.T) {
+	InitSingleTest()
+
+	w := New(&Config{})
+	filters := NewFilters(w)
+	filter1, _ := generateFilter(t, true)
+
+	asymKey, err := crypto.GenerateKey()
+	if err != nil {
+		t.Fatalf("Unable to create asymetric keys: %v", err)
+	}
+
+	// Copy the first filter since some of its fields
+	// are randomly gnerated.
+	filter := &Filter{
+		KeySym:   filter1.KeySym,
+		KeyAsym:  asymKey,
+		Topics:   filter1.Topics,
+		PoW:      filter1.PoW,
+		AllowP2P: filter1.AllowP2P,
+		Messages: make(map[common.Hash]*ReceivedMessage),
+	}
+
+	_, err = filters.Install(filter)
+
+	if err == nil {
+		t.Fatalf("Error detecting that a filter had both an asymmetric and symmetric key, with seed %d", seed)
+	}
+}
+
 func TestComparePubKey(t *testing.T) {
 	InitSingleTest()
 
@@ -310,12 +340,6 @@ func TestMatchEnvelope(t *testing.T) {
 	match = fsym.MatchEnvelope(env)
 	if !match {
 		t.Fatalf("failed MatchEnvelope() symmetric with seed %d.", seed)
-	}
-
-	// asymmetric + matching topic: mismatch
-	match = fasym.MatchEnvelope(env)
-	if match {
-		t.Fatalf("failed MatchEnvelope() asymmetric with seed %d.", seed)
 	}
 
 	// symmetric + matching topic + insufficient PoW: mismatch
@@ -776,6 +800,7 @@ func TestWatchers(t *testing.T) {
 func TestVariableTopics(t *testing.T) {
 	InitSingleTest()
 
+	const lastTopicByte = 3
 	var match bool
 	params, err := generateMessageParams()
 	if err != nil {
@@ -796,19 +821,52 @@ func TestVariableTopics(t *testing.T) {
 	}
 
 	for i := 0; i < 4; i++ {
-		arr := make([]byte, i+1, 4)
-		copy(arr, env.Topic[:i+1])
-
-		f.Topics[4] = arr
+		env.Topic = BytesToTopic(f.Topics[i])
 		match = f.MatchEnvelope(env)
 		if !match {
 			t.Fatalf("failed MatchEnvelope symmetric with seed %d, step %d.", seed, i)
 		}
 
-		f.Topics[4][i]++
+		f.Topics[i][lastTopicByte]++
 		match = f.MatchEnvelope(env)
 		if match {
 			t.Fatalf("MatchEnvelope symmetric with seed %d, step %d: false positive.", seed, i)
 		}
+	}
+}
+
+func TestMatchSingleTopic_ReturnTrue(t *testing.T) {
+	bt := []byte("test")
+	topic := BytesToTopic(bt)
+
+	if !matchSingleTopic(topic, bt) {
+		t.FailNow()
+	}
+}
+
+func TestMatchSingleTopic_WithTail_ReturnTrue(t *testing.T) {
+	bt := []byte("test with tail")
+	topic := BytesToTopic([]byte("test"))
+
+	if !matchSingleTopic(topic, bt) {
+		t.FailNow()
+	}
+}
+
+func TestMatchSingleTopic_NotEquals_ReturnFalse(t *testing.T) {
+	bt := []byte("tes")
+	topic := BytesToTopic(bt)
+
+	if matchSingleTopic(topic, bt) {
+		t.FailNow()
+	}
+}
+
+func TestMatchSingleTopic_InsufficientLength_ReturnFalse(t *testing.T) {
+	bt := []byte("test")
+	topic := BytesToTopic([]byte("not_equal"))
+
+	if matchSingleTopic(topic, bt) {
+		t.FailNow()
 	}
 }

@@ -32,7 +32,6 @@ import (
 	"github.com/ethereum/go-ethereum/core"
 	"github.com/ethereum/go-ethereum/core/state"
 	"github.com/ethereum/go-ethereum/core/types"
-	"github.com/ethereum/go-ethereum/eth"
 	"github.com/ethereum/go-ethereum/eth/downloader"
 	"github.com/ethereum/go-ethereum/ethdb"
 	"github.com/ethereum/go-ethereum/event"
@@ -73,17 +72,16 @@ func errResp(code errCode, format string, v ...interface{}) error {
 }
 
 type BlockChain interface {
+	Config() *params.ChainConfig
 	HasHeader(hash common.Hash, number uint64) bool
 	GetHeader(hash common.Hash, number uint64) *types.Header
 	GetHeaderByHash(hash common.Hash) *types.Header
 	CurrentHeader() *types.Header
-	GetTdByHash(hash common.Hash) *big.Int
+	GetTd(hash common.Hash, number uint64) *big.Int
 	InsertHeaderChain(chain []*types.Header, checkFreq int) (int, error)
 	Rollback(chain []common.Hash)
-	Status() (td *big.Int, currentBlock common.Hash, genesisBlock common.Hash)
 	GetHeaderByNumber(number uint64) *types.Header
 	GetBlockHashesFromHash(hash common.Hash, max uint64) []common.Hash
-	LastBlockHash() common.Hash
 	Genesis() *types.Block
 	SubscribeChainHeadEvent(ch chan<- core.ChainHeadEvent) event.Subscription
 }
@@ -111,6 +109,7 @@ type ProtocolManager struct {
 	downloader *downloader.Downloader
 	fetcher    *lightFetcher
 	peers      *peerSet
+	maxPeers   int
 
 	SubProtocols []p2p.Protocol
 
@@ -218,7 +217,9 @@ func (pm *ProtocolManager) removePeer(id string) {
 	pm.peers.Unregister(id)
 }
 
-func (pm *ProtocolManager) Start() {
+func (pm *ProtocolManager) Start(maxPeers int) {
+	pm.maxPeers = maxPeers
+
 	if pm.lightSync {
 		go pm.syncer()
 	} else {
@@ -259,12 +260,21 @@ func (pm *ProtocolManager) newPeer(pv int, nv uint64, p *p2p.Peer, rw p2p.MsgRea
 // handle is the callback invoked to manage the life cycle of a les peer. When
 // this function terminates, the peer is disconnected.
 func (pm *ProtocolManager) handle(p *peer) error {
+	if pm.peers.Len() >= pm.maxPeers {
+		return p2p.DiscTooManyPeers
+	}
+
 	p.Log().Debug("Light Ethereum peer connected", "name", p.Name())
 
 	// Execute the LES handshake
-	td, head, genesis := pm.blockchain.Status()
-	headNum := core.GetBlockNumber(pm.chainDb, head)
-	if err := p.Handshake(td, head, headNum, genesis, pm.server); err != nil {
+	var (
+		genesis = pm.blockchain.Genesis()
+		head    = pm.blockchain.CurrentHeader()
+		hash    = head.Hash()
+		number  = head.Number.Uint64()
+		td      = pm.blockchain.GetTd(hash, number)
+	)
+	if err := p.Handshake(td, hash, number, genesis.Hash(), pm.server); err != nil {
 		p.Log().Debug("Light Ethereum handshake failed", "err", err)
 		return err
 	}
@@ -846,8 +856,8 @@ func (pm *ProtocolManager) handleMsg(p *peer) error {
 			}
 
 			if header := pm.blockchain.GetHeaderByNumber(req.BlockNum); header != nil {
-				sectionHead := core.GetCanonicalHash(pm.chainDb, (req.ChtNum+1)*light.ChtV1Frequency-1)
-				if root := light.GetChtRoot(pm.chainDb, req.ChtNum, sectionHead); root != (common.Hash{}) {
+				sectionHead := core.GetCanonicalHash(pm.chainDb, req.ChtNum*light.ChtV1Frequency-1)
+				if root := light.GetChtRoot(pm.chainDb, req.ChtNum-1, sectionHead); root != (common.Hash{}) {
 					if tr, _ := trie.New(root, trieDb); tr != nil {
 						var encNumber [8]byte
 						binary.BigEndian.PutUint64(encNumber[:], req.BlockNum)
@@ -1014,7 +1024,7 @@ func (pm *ProtocolManager) handleMsg(p *peer) error {
 		for i, stat := range stats {
 			if stat.Status == core.TxStatusUnknown {
 				if errs := pm.txpool.AddRemotes([]*types.Transaction{req.Txs[i]}); errs[0] != nil {
-					stats[i].Error = errs[0]
+					stats[i].Error = errs[0].Error()
 					continue
 				}
 				stats[i] = pm.txStatus([]common.Hash{hashes[i]})[0]
@@ -1055,7 +1065,7 @@ func (pm *ProtocolManager) handleMsg(p *peer) error {
 		p.Log().Trace("Received tx status response")
 		var resp struct {
 			ReqID, BV uint64
-			Status    []core.TxStatus
+			Status    []txStatus
 		}
 		if err := msg.Decode(&resp); err != nil {
 			return errResp(ErrDecode, "msg %v: %v", msg, err)
@@ -1123,13 +1133,27 @@ func (pm *ProtocolManager) txStatus(hashes []common.Hash) []txStatus {
 	return stats
 }
 
+// NodeInfo represents a short summary of the Ethereum sub-protocol metadata
+// known about the host peer.
+type NodeInfo struct {
+	Network    uint64              `json:"network"`    // Ethereum network ID (1=Frontier, 2=Morden, Ropsten=3, Rinkeby=4)
+	Difficulty *big.Int            `json:"difficulty"` // Total difficulty of the host's blockchain
+	Genesis    common.Hash         `json:"genesis"`    // SHA3 hash of the host's genesis block
+	Config     *params.ChainConfig `json:"config"`     // Chain configuration for the fork rules
+	Head       common.Hash         `json:"head"`       // SHA3 hash of the host's best owned block
+}
+
 // NodeInfo retrieves some protocol metadata about the running host node.
-func (self *ProtocolManager) NodeInfo() *eth.EthNodeInfo {
-	return &eth.EthNodeInfo{
+func (self *ProtocolManager) NodeInfo() *NodeInfo {
+	head := self.blockchain.CurrentHeader()
+	hash := head.Hash()
+
+	return &NodeInfo{
 		Network:    self.networkId,
-		Difficulty: self.blockchain.GetTdByHash(self.blockchain.LastBlockHash()),
+		Difficulty: self.blockchain.GetTd(hash, head.Number.Uint64()),
 		Genesis:    self.blockchain.Genesis().Hash(),
-		Head:       self.blockchain.LastBlockHash(),
+		Config:     self.blockchain.Config(),
+		Head:       hash,
 	}
 }
 

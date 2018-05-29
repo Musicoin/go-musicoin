@@ -21,7 +21,6 @@ package main
 
 import (
 	"bytes"
-	"compress/zlib"
 	"context"
 	"encoding/json"
 	"errors"
@@ -223,7 +222,6 @@ func newFaucet(genesis *core.Genesis, port int, enodes []*discv5.Node, network u
 			NoDiscovery:      true,
 			DiscoveryV5:      true,
 			ListenAddr:       fmt.Sprintf(":%d", port),
-			DiscoveryV5Addr:  fmt.Sprintf(":%d", port+1),
 			MaxPeers:         25,
 			BootstrapNodesV5: enodes,
 		},
@@ -698,11 +696,7 @@ func authTwitter(url string) (string, string, common.Address, error) {
 	}
 	defer res.Body.Close()
 
-	reader, err := zlib.NewReader(res.Body)
-	if err != nil {
-		return "", "", common.Address{}, err
-	}
-	body, err := ioutil.ReadAll(reader)
+	body, err := ioutil.ReadAll(res.Body)
 	if err != nil {
 		return "", "", common.Address{}, err
 	}

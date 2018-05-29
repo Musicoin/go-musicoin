@@ -18,6 +18,7 @@ package whisperv6
 
 import (
 	"fmt"
+	"math"
 	"time"
 
 	"github.com/ethereum/go-ethereum/common"
@@ -29,10 +30,13 @@ import (
 
 // peer represents a whisper protocol peer connection.
 type Peer struct {
-	host    *Whisper
-	peer    *p2p.Peer
-	ws      p2p.MsgReadWriter
-	trusted bool
+	host *Whisper
+	peer *p2p.Peer
+	ws   p2p.MsgReadWriter
+
+	trusted        bool
+	powRequirement float64
+	bloomFilter    []byte // may contain nil in case of full node
 
 	known *set.Set // Messages already known by the peer to avoid wasting bandwidth
 
@@ -42,12 +46,13 @@ type Peer struct {
 // newPeer creates a new whisper peer object, but does not run the handshake itself.
 func newPeer(host *Whisper, remote *p2p.Peer, rw p2p.MsgReadWriter) *Peer {
 	return &Peer{
-		host:    host,
-		peer:    remote,
-		ws:      rw,
-		trusted: false,
-		known:   set.New(),
-		quit:    make(chan struct{}),
+		host:           host,
+		peer:           remote,
+		ws:             rw,
+		trusted:        false,
+		powRequirement: 0.0,
+		known:          set.New(),
+		quit:           make(chan struct{}),
 	}
 }
 
@@ -70,8 +75,12 @@ func (p *Peer) handshake() error {
 	// Send the handshake status message asynchronously
 	errc := make(chan error, 1)
 	go func() {
-		errc <- p2p.Send(p.ws, statusCode, ProtocolVersion)
+		pow := p.host.MinPow()
+		powConverted := math.Float64bits(pow)
+		bloom := p.host.BloomFilter()
+		errc <- p2p.SendItems(p.ws, statusCode, ProtocolVersion, powConverted, bloom)
 	}()
+
 	// Fetch the remote status packet and verify protocol match
 	packet, err := p.ws.ReadMsg()
 	if err != nil {
@@ -81,14 +90,42 @@ func (p *Peer) handshake() error {
 		return fmt.Errorf("peer [%x] sent packet %x before status packet", p.ID(), packet.Code)
 	}
 	s := rlp.NewStream(packet.Payload, uint64(packet.Size))
-	peerVersion, err := s.Uint()
+	_, err = s.List()
 	if err != nil {
 		return fmt.Errorf("peer [%x] sent bad status message: %v", p.ID(), err)
+	}
+	peerVersion, err := s.Uint()
+	if err != nil {
+		return fmt.Errorf("peer [%x] sent bad status message (unable to decode version): %v", p.ID(), err)
 	}
 	if peerVersion != ProtocolVersion {
 		return fmt.Errorf("peer [%x]: protocol version mismatch %d != %d", p.ID(), peerVersion, ProtocolVersion)
 	}
-	// Wait until out own status is consumed too
+
+	// only version is mandatory, subsequent parameters are optional
+	powRaw, err := s.Uint()
+	if err == nil {
+		pow := math.Float64frombits(powRaw)
+		if math.IsInf(pow, 0) || math.IsNaN(pow) || pow < 0.0 {
+			return fmt.Errorf("peer [%x] sent bad status message: invalid pow", p.ID())
+		}
+		p.powRequirement = pow
+
+		var bloom []byte
+		err = s.Decode(&bloom)
+		if err == nil {
+			sz := len(bloom)
+			if sz != bloomFilterSize && sz != 0 {
+				return fmt.Errorf("peer [%x] sent bad status message: wrong bloom filter size %d", p.ID(), sz)
+			}
+			if isFullNode(bloom) {
+				p.bloomFilter = nil
+			} else {
+				p.bloomFilter = bloom
+			}
+		}
+	}
+
 	if err := <-errc; err != nil {
 		return fmt.Errorf("peer [%x] failed to send status packet: %v", p.ID(), err)
 	}
@@ -149,21 +186,26 @@ func (peer *Peer) expire() {
 // broadcast iterates over the collection of envelopes and transmits yet unknown
 // ones over the network.
 func (p *Peer) broadcast() error {
-	var cnt int
 	envelopes := p.host.Envelopes()
+	bundle := make([]*Envelope, 0, len(envelopes))
 	for _, envelope := range envelopes {
-		if !p.marked(envelope) {
-			err := p2p.Send(p.ws, messagesCode, envelope)
-			if err != nil {
-				return err
-			} else {
-				p.mark(envelope)
-				cnt++
-			}
+		if !p.marked(envelope) && envelope.PoW() >= p.powRequirement && p.bloomMatch(envelope) {
+			bundle = append(bundle, envelope)
 		}
 	}
-	if cnt > 0 {
-		log.Trace("broadcast", "num. messages", cnt)
+
+	if len(bundle) > 0 {
+		// transmit the batch of envelopes
+		if err := p2p.Send(p.ws, messagesCode, bundle); err != nil {
+			return err
+		}
+
+		// mark envelopes only if they were successfully sent
+		for _, e := range bundle {
+			p.mark(e)
+		}
+
+		log.Trace("broadcast", "num. messages", len(bundle))
 	}
 	return nil
 }
@@ -171,4 +213,22 @@ func (p *Peer) broadcast() error {
 func (p *Peer) ID() []byte {
 	id := p.peer.ID()
 	return id[:]
+}
+
+func (p *Peer) notifyAboutPowRequirementChange(pow float64) error {
+	i := math.Float64bits(pow)
+	return p2p.Send(p.ws, powRequirementCode, i)
+}
+
+func (p *Peer) notifyAboutBloomFilterChange(bloom []byte) error {
+	return p2p.Send(p.ws, bloomFilterExCode, bloom)
+}
+
+func (p *Peer) bloomMatch(env *Envelope) bool {
+	if p.bloomFilter == nil {
+		// no filter - full node, accepts all envelops
+		return true
+	}
+
+	return bloomFilterMatch(p.bloomFilter, env.Bloom())
 }

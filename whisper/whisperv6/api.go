@@ -116,12 +116,17 @@ func (api *PublicWhisperAPI) SetMaxMessageSize(ctx context.Context, size uint32)
 	return true, api.w.SetMaxMessageSize(size)
 }
 
-// SetMinPow sets the minimum PoW for a message before it is accepted.
+// SetMinPow sets the minimum PoW, and notifies the peers.
 func (api *PublicWhisperAPI) SetMinPoW(ctx context.Context, pow float64) (bool, error) {
 	return true, api.w.SetMinimumPoW(pow)
 }
 
-// MarkTrustedPeer marks a peer trusted. , which will allow it to send historic (expired) messages.
+// SetBloomFilter sets the new value of bloom filter, and notifies the peers.
+func (api *PublicWhisperAPI) SetBloomFilter(ctx context.Context, bloom hexutil.Bytes) (bool, error) {
+	return true, api.w.SetBloomFilter(bloom)
+}
+
+// MarkTrustedPeer marks a peer trusted, which will allow it to send historic (expired) messages.
 // Note: This function is not adding new nodes, the node needs to exists as a peer.
 func (api *PublicWhisperAPI) MarkTrustedPeer(ctx context.Context, enode string) (bool, error) {
 	n, err := discover.ParseNode(enode)
@@ -562,7 +567,7 @@ func (api *PublicWhisperAPI) NewMessageFilter(req Criteria) (string, error) {
 	}
 
 	if len(req.Topics) > 0 {
-		topics = make([][]byte, 1)
+		topics = make([][]byte, 0, len(req.Topics))
 		for _, topic := range req.Topics {
 			topics = append(topics, topic[:])
 		}
