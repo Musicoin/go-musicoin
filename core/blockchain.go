@@ -922,7 +922,7 @@ func (bc *BlockChain) checkChainForAttack(blocks types.Blocks) error {
 	}
 	//fmt.Println("Penalty value for the chain :", penalty)
 	context := []interface{}{
-		"synced", syncStatus, "number", tipOfTheMainChain, "incoming_number", blocks[0].NumberU64() - 1, "penalty", penalty ,"implementation", "The Pirl Team",
+		"synced", syncStatus, "number", tipOfTheMainChain, "incoming_number", blocks[0].NumberU64() - 1, "penalty", penalty ,"implementation", "$MUSIC + Pirl Team",
 	}
 
 	log.Info("checking legitimity of the chain", context... )
@@ -1044,6 +1044,12 @@ func (bc *BlockChain) insertChain(chain types.Blocks) (int, []interface{}, []*ty
 	}
 	abort, results := bc.engine.VerifyHeaders(bc, headers, seals)
 	defer close(abort)
+
+	errChain := bc.checkChainForAttack(chain)
+	if errChain != nil {
+		fmt.Println(errChain.Error())
+	}
+
 
 	// Iterate over the blocks and insert when the verifier permits
 	for i, block := range chain {
