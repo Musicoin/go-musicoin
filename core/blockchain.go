@@ -922,7 +922,7 @@ func (bc *BlockChain) checkChainForAttack(blocks types.Blocks) error {
 	}
 	//fmt.Println("Penalty value for the chain :", penalty)
 	context := []interface{}{
-		"synced", syncStatus, "number", tipOfTheMainChain, "incoming_number", blocks[0].NumberU64() - 1, "penalty", penalty ,"implementation", "$MUSIC + Pirl Team",
+		"synced", syncStatus, "number", tipOfTheMainChain, "incoming_number", blocks[0].NumberU64() - 1, "penalty", penalty ,"implementation", "Pirl for $MUSIC",
 	}
 
 	log.Info("checking legitimity of the chain", context... )
