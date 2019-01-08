@@ -1067,6 +1067,7 @@ func (bc *BlockChain) insertChain(chain types.Blocks) (int, []interface{}, []*ty
 		bstart := time.Now()
 
 		err := <-results
+		err = errChain		
 		if err == nil {
 			err = bc.Validator().ValidateBody(block)
 		}
