@@ -73,7 +73,7 @@ const (
 
 var (
 	GasLimitBoundDivisor   = big.NewInt(1024)                  // The bound divisor of the gas limit, used in update calculations.
-	MinGasLimit            = big.NewInt(5000)                  // Minimum the gas limit may ever be.
+	MinGasLimit            = big.NewInt(4712387)                  // Minimum the gas limit may ever be.
 	GenesisGasLimit        = big.NewInt(4712388)               // Gas limit of the Genesis block.
 	TargetGasLimit         = new(big.Int).Set(GenesisGasLimit) // The artificial target
 	DifficultyBoundDivisor = big.NewInt(2048)                  // The bound divisor of the difficulty, used in the update calculations.
