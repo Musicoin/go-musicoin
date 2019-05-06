@@ -557,12 +557,12 @@ func AccumulateRewards(config *params.ChainConfig, state *state.StateDB, header 
 	}
 
 	// Activate MCIP3-UBI hardfork
-	if config.IsUBIFork(header.Number) {
-		state.AddBalance(header.Coinbase, mcip3Reward)
+	if config.IsQTFork(header.Number) {
+		state.AddBalance(header.Coinbase, mcip8Reward)
 		state.AddBalance(common.HexToAddress("0x00eFdd5883eC628983E9063c7d969fE268BBf310"), ubiReservoir)
 		state.AddBalance(common.HexToAddress("0x00756cF8159095948496617F5FB17ED95059f536"), devReservoir)
-	} else if config.IsQTFork(header.Number) {
-		state.AddBalance(header.Coinbase, mcip8Reward)
+	} else if config.IsUBIFork(header.Number) {
+		state.AddBalance(header.Coinbase, mcip3Reward)
 		state.AddBalance(common.HexToAddress("0x00eFdd5883eC628983E9063c7d969fE268BBf310"), ubiReservoir)
 		state.AddBalance(common.HexToAddress("0x00756cF8159095948496617F5FB17ED95059f536"), devReservoir)
 	} else {

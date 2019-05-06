@@ -37,7 +37,7 @@ var (
 		ChainId:        big.NewInt(7762959),
 		HomesteadBlock: big.NewInt(1150000),
 		UBIForkBlock:   big.NewInt(1200001),
-		QTForkBlock:   big.NewInt(5200000),
+		QTForkBlock:   	big.NewInt(5200001),
 		DAOForkBlock:   big.NewInt(36028797018963967),
 		DAOForkSupport: false,
 		EIP150Block:    big.NewInt(2222222),
@@ -114,7 +114,7 @@ type ChainConfig struct {
 
 	HomesteadBlock *big.Int `json:"homesteadBlock,omitempty"` // Homestead switch block (nil = no fork, 0 = already homestead)
 	UBIForkBlock	*big.Int  `json:"ubiForkBlock"`		// UBI hard-fork switch block, can't be nil
-	QTForkBlock	*big.Int  `json:"qtForkBlock"`		// UBI hard-fork switch block, can't be nil
+	QTForkBlock	*big.Int  `json:"qtForkBlock"`		// QT hard-fork switch block, can't be nil
 
 	DAOForkBlock   *big.Int `json:"daoForkBlock,omitempty"`   // TheDAO hard-fork switch block (nil = no fork)
 	DAOForkSupport bool     `json:"daoForkSupport,omitempty"` // Whether the nodes supports or opposes the DAO hard-fork
