@@ -41,6 +41,7 @@ import (
 var (
 	FrontierBlockReward     *big.Int = new(big.Int).Mul(big.NewInt(314), big.NewInt(1e+18))
 	Mcip3BlockReward     *big.Int = new(big.Int).Mul(big.NewInt(250), big.NewInt(1e+18))
+	Mcip8BlockReward     *big.Int = new(big.Int).Mul(big.NewInt(50), big.NewInt(1e+18))
 	UbiBlockReward       *big.Int = new(big.Int).Mul(big.NewInt(50), big.NewInt(1e+18))
 	DevBlockReward       *big.Int = new(big.Int).Mul(big.NewInt(14), big.NewInt(1e+18))
 	ByzantiumBlockReward *big.Int = new(big.Int).Mul(big.NewInt(0), big.NewInt(1e+18))
@@ -537,11 +538,30 @@ func AccumulateRewards(config *params.ChainConfig, state *state.StateDB, header 
 	// Select the correct block reward based on chain progression
 	blockReward := FrontierBlockReward
 	mcip3Reward := Mcip3BlockReward
+	mcip8Reward := Mcip8BlockReward
 	ubiReservoir := UbiBlockReward
 	devReservoir := DevBlockReward
 
-	// Accumulate the rewards for the miner and any included uncles
 	reward := new(big.Int).Set(blockReward)
+
+	// Activate MCIP3-UBI hardfork
+	if config.IsQTFork(header.Number) {
+		state.AddBalance(header.Coinbase, mcip8Reward)
+		state.AddBalance(common.HexToAddress("0x00eFdd5883eC628983E9063c7d969fE268BBf310"), ubiReservoir)
+		state.AddBalance(common.HexToAddress("0x00756cF8159095948496617F5FB17ED95059f536"), devReservoir)
+		blockReward := mcip8Reward
+		reward := new(big.Int).Set(blockReward)
+		_ = reward 
+	} else if config.IsUBIFork(header.Number) {
+		state.AddBalance(header.Coinbase, mcip3Reward)
+		state.AddBalance(common.HexToAddress("0x00eFdd5883eC628983E9063c7d969fE268BBf310"), ubiReservoir)
+		state.AddBalance(common.HexToAddress("0x00756cF8159095948496617F5FB17ED95059f536"), devReservoir)
+		// no change to uncle reward during UBI fork, a mistake but now a legacy
+	} else {
+		state.AddBalance(header.Coinbase, reward)
+	}
+
+	// Accumulate the rewards for the miner and any included uncles
 	r := new(big.Int)
 	for _, uncle := range uncles {
 		r.Add(uncle.Number, big8)
@@ -554,12 +574,4 @@ func AccumulateRewards(config *params.ChainConfig, state *state.StateDB, header 
 		reward.Add(reward, r)
 	}
 
-	// Activate MCIP3-UBI hardfork
-	if config.IsUBIFork(header.Number) {
-		state.AddBalance(header.Coinbase, mcip3Reward)
-		state.AddBalance(common.HexToAddress("0x00eFdd5883eC628983E9063c7d969fE268BBf310"), ubiReservoir)
-		state.AddBalance(common.HexToAddress("0x00756cF8159095948496617F5FB17ED95059f536"), devReservoir)
-	} else {
-		state.AddBalance(header.Coinbase, reward)
-	}
 }
