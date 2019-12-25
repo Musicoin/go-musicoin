@@ -34,7 +34,7 @@ var (
 var (
 	// MainnetChainConfig is the chain parameters to run a node on the main network.
 	MainnetChainConfig = &ChainConfig{
-		ChainId:        big.NewInt(7762959),
+		ChainId:        big.NewInt(20191226),
 		HomesteadBlock: big.NewInt(1150000),
 		UBIForkBlock:   big.NewInt(1200001),
 		QTForkBlock:   	big.NewInt(5200001),
@@ -51,7 +51,7 @@ var (
 
 	// TestnetChainConfig contains the chain parameters to run a node on the Ropsten test network.
 	TestnetChainConfig = &ChainConfig{
-		ChainId:        big.NewInt(7762955),
+		ChainId:        big.NewInt(20191226),
 		HomesteadBlock: big.NewInt(0),
 		UBIForkBlock:   big.NewInt(0),
 		QTForkBlock:   big.NewInt(0),
