@@ -34,12 +34,6 @@ import (
 // the block's difficulty requirements.
 func (ethash *Ethash) Seal(chain consensus.ChainReader, block *types.Block, stop <-chan struct{}) (*types.Block, error) {
 
-	// if there are no tx, just hold
-	if len(block.Transactions()) == 0 {
-    log.Info("Sealing paused, waiting for transactions")
-    return nil, nil
-	}																																																																																													
-
 	// If we're running a fake PoW, simply return a 0 nonce immediately
 	if ethash.config.PowMode == ModeFake || ethash.config.PowMode == ModeFullFake {
 		header := block.Header()
