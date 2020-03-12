@@ -38,6 +38,7 @@ var (
 		HomesteadBlock: big.NewInt(1150000),
 		UBIForkBlock:   big.NewInt(1200001),
 		QTForkBlock:   	big.NewInt(5200001),
+		NMForkBlock: 		big.NewInt(6227141),
 		DAOForkBlock:   big.NewInt(36028797018963967),
 		DAOForkSupport: false,
 		EIP150Block:    big.NewInt(2222222),
@@ -54,8 +55,9 @@ var (
 		ChainId:        big.NewInt(7762955),
 		HomesteadBlock: big.NewInt(0),
 		UBIForkBlock:   big.NewInt(0),
-		QTForkBlock:   big.NewInt(0),
 		DAOForkBlock:   big.NewInt(36028797018963967),
+		NMForkBlock: 		big.NewInt(0),
+		QTForkBlock:   big.NewInt(0),
 		DAOForkSupport: false,
 		EIP150Block:    big.NewInt(0),
 		EIP150Hash:     common.HexToHash("0x41941023680923e0fe4d74a34bdac8141f2540e3ae90623718e47d66d1ca4a2d"),
@@ -72,6 +74,7 @@ var (
 		HomesteadBlock: big.NewInt(1),
 		UBIForkBlock:   big.NewInt(0),
 		QTForkBlock:   big.NewInt(0),
+		NMForkBlock: 		big.NewInt(0),
 		DAOForkBlock:   nil,
 		DAOForkSupport: true,
 		EIP150Block:    big.NewInt(2),
@@ -91,16 +94,16 @@ var (
 	//
 	// This configuration is intentionally not using keyed fields to force anyone
 	// adding flags to the config to also have to set these fields.
-	AllEthashProtocolChanges = &ChainConfig{big.NewInt(1337), big.NewInt(0), big.NewInt(0), big.NewInt(0), nil, false, big.NewInt(0), common.Hash{}, big.NewInt(0), big.NewInt(0), big.NewInt(0), new(EthashConfig), nil}
+	AllEthashProtocolChanges = &ChainConfig{big.NewInt(1337), big.NewInt(0), big.NewInt(0), big.NewInt(0), big.NewInt(0), nil, false, big.NewInt(0), common.Hash{}, big.NewInt(0), big.NewInt(0), big.NewInt(0), new(EthashConfig), nil}
 
 	// AllCliqueProtocolChanges contains every protocol change (EIPs) introduced
 	// and accepted by the Ethereum core developers into the Clique consensus.
 	//
 	// This configuration is intentionally not using keyed fields to force anyone
 	// adding flags to the config to also have to set these fields.
-	AllCliqueProtocolChanges = &ChainConfig{big.NewInt(1337), big.NewInt(0), big.NewInt(0), big.NewInt(0), nil, false, big.NewInt(0), common.Hash{}, big.NewInt(0), big.NewInt(0), big.NewInt(0), nil, &CliqueConfig{Period: 0, Epoch: 30000}}
+	AllCliqueProtocolChanges = &ChainConfig{big.NewInt(1337), big.NewInt(0), big.NewInt(0), big.NewInt(0), big.NewInt(0), nil, false, big.NewInt(0), common.Hash{}, big.NewInt(0), big.NewInt(0), big.NewInt(0), nil, &CliqueConfig{Period: 0, Epoch: 30000}}
 
-	TestChainConfig = &ChainConfig{big.NewInt(1337), big.NewInt(0), big.NewInt(0), big.NewInt(0), nil, false, big.NewInt(0), common.Hash{}, big.NewInt(0), big.NewInt(0), big.NewInt(0), new(EthashConfig), nil}
+	TestChainConfig = &ChainConfig{big.NewInt(1337), big.NewInt(0), big.NewInt(0), big.NewInt(0), big.NewInt(0), nil, false, big.NewInt(0), common.Hash{}, big.NewInt(0), big.NewInt(0), big.NewInt(0), new(EthashConfig), nil}
 	TestRules          = TestChainConfig.Rules(new(big.Int))
 )
 
@@ -115,6 +118,8 @@ type ChainConfig struct {
 	HomesteadBlock *big.Int `json:"homesteadBlock,omitempty"` // Homestead switch block (nil = no fork, 0 = already homestead)
 	UBIForkBlock	*big.Int  `json:"ubiForkBlock"`		// UBI hard-fork switch block, can't be nil
 	QTForkBlock	*big.Int  `json:"qtForkBlock"`		// QT hard-fork switch block, can't be nil
+	NMForkBlock	*big.Int  `json:"nmForkBlock"`		// NM hard-fork switch block, can't be nil
+
 
 	DAOForkBlock   *big.Int `json:"daoForkBlock,omitempty"`   // TheDAO hard-fork switch block (nil = no fork)
 	DAOForkSupport bool     `json:"daoForkSupport,omitempty"` // Whether the nodes supports or opposes the DAO hard-fork
@@ -163,11 +168,12 @@ func (c *ChainConfig) String() string {
 	default:
 		engine = "unknown"
 	}
-	return fmt.Sprintf("{ChainID: %v Homestead: %v MCIP3-UBI: %v MCIP-8: %v EIP150: %v EIP155: %v EIP158: %v Byzantium: %v Engine: %v}",
+	return fmt.Sprintf("{ChainID: %v Homestead: %v MCIP3-UBI: %v MCIP-8: %v MCIP-10: %v EIP150: %v EIP155: %v EIP158: %v Byzantium: %v Engine: %v}",
 		c.ChainId,
 		c.HomesteadBlock,
 		c.UBIForkBlock,
 		c.QTForkBlock,
+		c.NMForkBlock,
 //		c.DAOForkBlock,
 //		c.DAOForkSupport,
 		c.EIP150Block,
@@ -191,6 +197,11 @@ func (c *ChainConfig) IsUBIFork(num *big.Int) bool {
 // IsQTFork returns whether num is either equal to the MCIP3-UBI block or greater.
 func (c *ChainConfig) IsQTFork(num *big.Int) bool {
 	return isForked(c.QTForkBlock, num)
+}
+
+// IsQTFork returns whether num is either equal to the MCIP3-UBI block or greater.
+func (c *ChainConfig) IsNMFork(num *big.Int) bool {
+	return isForked(c.NMForkBlock, num)
 }
 
 // IsDAOFork returns whether num is either equal to the DAO fork block or greater.
