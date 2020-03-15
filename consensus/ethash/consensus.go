@@ -551,7 +551,7 @@ func AccumulateRewards(config *params.ChainConfig, state *state.StateDB, header 
 		state.AddBalance(header.Coinbase, mcip10Reward)
 		state.AddBalance(common.HexToAddress("0x00eFdd5883eC628983E9063c7d969fE268BBf310"), ubiReservoir)
 		state.AddBalance(common.HexToAddress("0x00756cF8159095948496617F5FB17ED95059f536"), devReservoir)
-		blockReward := mcip8Reward
+		blockReward := mcip10Reward
 		reward := new(big.Int).Set(blockReward)
 		_ = reward
 	} else if config.IsQTFork(header.Number) {
@@ -571,19 +571,17 @@ func AccumulateRewards(config *params.ChainConfig, state *state.StateDB, header 
 	}
 
 	// Accumulate the rewards for the miner and any included uncles
-	if config.IsNMFork(header.Number) {
-		blockReward := 1
-	}
-	r := new(big.Int)
-	for _, uncle := range uncles {
-		r.Add(uncle.Number, big8)
-		r.Sub(r, header.Number)
-		r.Mul(r, blockReward)
-		r.Div(r, big8)
-		state.AddBalance(uncle.Coinbase, r)
+	if !config.IsNMFork(header.Number) {
+		r := new(big.Int)
+		for _, uncle := range uncles {
+			r.Add(uncle.Number, big8)
+			r.Sub(r, header.Number)
+			r.Mul(r, blockReward)
+			r.Div(r, big8)
+			state.AddBalance(uncle.Coinbase, r)
 
-		r.Div(blockReward, big32)
-		reward.Add(reward, r)
+			r.Div(blockReward, big32)
+			reward.Add(reward, r)
+		}
 	}
-
 }
