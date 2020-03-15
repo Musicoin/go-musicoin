@@ -540,7 +540,7 @@ func AccumulateRewards(config *params.ChainConfig, state *state.StateDB, header 
 	blockReward := FrontierBlockReward
 	mcip3Reward := Mcip3BlockReward
 	mcip8Reward := Mcip8BlockReward
-	mcip10Reward := Mcip10BlockReward
+	//mcip10Reward := Mcip10BlockReward
 	ubiReservoir := UbiBlockReward
 	devReservoir := DevBlockReward
 
