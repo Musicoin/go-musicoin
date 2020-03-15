@@ -572,7 +572,7 @@ func AccumulateRewards(config *params.ChainConfig, state *state.StateDB, header 
 
 	// Accumulate the rewards for the miner and any included uncles
 	if config.IsNMFork(header.Number) {
-		blockReward := 1;
+		blockReward := 1
 	}
 	r := new(big.Int)
 	for _, uncle := range uncles {
