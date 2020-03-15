@@ -38,7 +38,7 @@ var (
 		HomesteadBlock: big.NewInt(1150000),
 		UBIForkBlock:   big.NewInt(1200001),
 		QTForkBlock:   	big.NewInt(5200001),
-		NMForkBlock: 		big.NewInt(6229200),
+		NMForkBlock: 		big.NewInt(6229400),
 		DAOForkBlock:   big.NewInt(36028797018963967),
 		DAOForkSupport: false,
 		EIP150Block:    big.NewInt(2222222),
