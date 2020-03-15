@@ -540,7 +540,7 @@ func AccumulateRewards(config *params.ChainConfig, state *state.StateDB, header 
 	blockReward := FrontierBlockReward
 	mcip3Reward := Mcip3BlockReward
 	mcip8Reward := Mcip8BlockReward
-	//mcip10Reward := Mcip10BlockReward
+	mcip10Reward := Mcip10BlockReward
 	ubiReservoir := UbiBlockReward
 	devReservoir := DevBlockReward
 
@@ -548,10 +548,10 @@ func AccumulateRewards(config *params.ChainConfig, state *state.StateDB, header 
 
 	// Activate MCIP3-UBI hardfork
 	if config.IsNMFork(header.Number) {
-		state.AddBalance(header.Coinbase, mcip8Reward)
+		state.AddBalance(header.Coinbase, mcip10Reward)
 		state.AddBalance(common.HexToAddress("0x00eFdd5883eC628983E9063c7d969fE268BBf310"), ubiReservoir)
 		state.AddBalance(common.HexToAddress("0x00756cF8159095948496617F5FB17ED95059f536"), devReservoir)
-		blockReward := mcip8Reward
+		blockReward := mcip10Reward
 		reward := new(big.Int).Set(blockReward)
 		_ = reward
 	} else if config.IsQTFork(header.Number) {
