@@ -533,7 +533,7 @@ func (s *StateDB) Finalise(deleteEmptyObjects bool) {
 // goes into transaction receipts.
 func (s *StateDB) IntermediateRoot(deleteEmptyObjects bool) common.Hash {
 	s.Finalise(deleteEmptyObjects)
-	fmt.Sprintf(""%#v\n",s.trie)
+	fmt.Sprintf("%#v\n",s.trie)
 	return s.trie.Hash()
 }
 
