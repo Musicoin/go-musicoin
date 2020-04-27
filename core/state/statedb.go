@@ -516,11 +516,11 @@ func (self *StateDB) GetRefund() *big.Int {
 // and clears the journal as well as the refunds.
 func (s *StateDB) Finalise(deleteEmptyObjects bool) {
 	for addr := range s.stateObjectsDirty {
-		log.Trace("within dirt: %s",addr )
 		stateObject := s.stateObjects[addr]
 		if stateObject.suicided || (deleteEmptyObjects && stateObject.empty()) {
 			s.deleteStateObject(stateObject)
 		} else {
+			log.Trace("within dirt: %+v",addr )
 			stateObject.updateRoot(s.db)
 			s.updateStateObject(stateObject)
 		}
@@ -534,7 +534,7 @@ func (s *StateDB) Finalise(deleteEmptyObjects bool) {
 // goes into transaction receipts.
 func (s *StateDB) IntermediateRoot(deleteEmptyObjects bool) common.Hash {
 	s.Finalise(deleteEmptyObjects)
-	log.Trace("dirt out, %v:", s.trie)
+	log.Trace("dirt out, %+v:", s.trie)
 	return s.trie.Hash()
 }
 
