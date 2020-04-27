@@ -533,9 +533,8 @@ func (s *StateDB) Finalise(deleteEmptyObjects bool) {
 // goes into transaction receipts.
 func (s *StateDB) IntermediateRoot(deleteEmptyObjects bool) common.Hash {
 	s.Finalise(deleteEmptyObjects)
-	fmt.Sprintf("%s", s.trie)
-	hashsh := command.Hash("0x2343")// s.trie.Hash()
-	return hashsh
+	fmt.Sprintf("%s",string(s.trie))
+	return s.trie.Hash()
 }
 
 // Prepare sets the current transaction hash and index and block hash which is
