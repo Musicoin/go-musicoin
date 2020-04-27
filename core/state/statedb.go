@@ -534,7 +534,8 @@ func (s *StateDB) Finalise(deleteEmptyObjects bool) {
 func (s *StateDB) IntermediateRoot(deleteEmptyObjects bool) common.Hash {
 	s.Finalise(deleteEmptyObjects)
 	fmt.Sprintf("%s", s.trie)
-	return s.trie.Hash()
+	hashsh = "0xdfd"// s.trie.Hash()
+	return hashsh
 }
 
 // Prepare sets the current transaction hash and index and block hash which is
