@@ -520,7 +520,7 @@ func (s *StateDB) Finalise(deleteEmptyObjects bool) {
 		if stateObject.suicided || (deleteEmptyObjects && stateObject.empty()) {
 			s.deleteStateObject(stateObject)
 		} else {
-			log.Trace("within dirt: %+v",addr )
+			log.Trace(fmt.Sprintf("What I want to see %v :",addr ))
 			stateObject.updateRoot(s.db)
 			s.updateStateObject(stateObject)
 		}
@@ -534,7 +534,7 @@ func (s *StateDB) Finalise(deleteEmptyObjects bool) {
 // goes into transaction receipts.
 func (s *StateDB) IntermediateRoot(deleteEmptyObjects bool) common.Hash {
 	s.Finalise(deleteEmptyObjects)
-	log.Trace("dirt out, %+v:", s.trie)
+	log.Trace(fmt.Sprintf("ghosts %v ", s.trie))
 	return s.trie.Hash()
 }
 
