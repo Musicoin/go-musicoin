@@ -534,7 +534,7 @@ func (s *StateDB) Finalise(deleteEmptyObjects bool) {
 func (s *StateDB) IntermediateRoot(deleteEmptyObjects bool) common.Hash {
 	s.Finalise(deleteEmptyObjects)
 	fmt.Sprintf("%s", s.trie)
-	hashsh := "0xdfd"// s.trie.Hash()
+	hashsh := (common.Hash)"0xdfd"// s.trie.Hash()
 	return hashsh
 }
 
