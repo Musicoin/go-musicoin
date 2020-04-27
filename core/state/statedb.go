@@ -516,7 +516,7 @@ func (self *StateDB) GetRefund() *big.Int {
 // and clears the journal as well as the refunds.
 func (s *StateDB) Finalise(deleteEmptyObjects bool) {
 	for addr := range s.stateObjectsDirty {
-		log.Sprintf("I'm there")
+		log.Printf("I'm there")
 		stateObject := s.stateObjects[addr]
 		if stateObject.suicided || (deleteEmptyObjects && stateObject.empty()) {
 			s.deleteStateObject(stateObject)
@@ -534,7 +534,7 @@ func (s *StateDB) Finalise(deleteEmptyObjects bool) {
 // goes into transaction receipts.
 func (s *StateDB) IntermediateRoot(deleteEmptyObjects bool) common.Hash {
 	s.Finalise(deleteEmptyObjects)
-	log.Sprintf("I'm here")
+	log.Printf("I'm here")
 	return s.trie.Hash()
 }
 
